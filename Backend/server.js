@@ -11,13 +11,22 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 /* ---------------- CORS CONFIG (IMPORTANT) ---------------- */
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://spice-drama-admin.vercel.app",
+  "https://spice-drama.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://spice-drama-admin.vercel.app",
-      "https://spice-drama.vercel.app",
-    ],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // Postman / server
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      console.warn("Blocked by CORS:", origin);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
