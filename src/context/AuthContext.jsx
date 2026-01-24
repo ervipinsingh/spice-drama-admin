@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from "react";
-import { authAPI } from "../services/api";
+import adminApi from "../services/adminApi";
 
 const AuthContext = createContext(null);
 
@@ -11,11 +11,11 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
+  /* ---------------- CHECK AUTH ---------------- */
   const checkAuth = async () => {
     try {
-      const response = await authAPI.getCurrentUser();
+      const response = await adminApi.get("/auth/me");
       setUser(response.data.user);
-      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setUser(null);
     } finally {
@@ -23,14 +23,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /* ---------------- LOGIN ---------------- */
   const login = async (credentials) => {
-    const response = await authAPI.login(credentials);
+    const response = await adminApi.post("/auth/login", credentials);
     setUser(response.data.user);
     return response.data;
   };
 
+  /* ---------------- LOGOUT ---------------- */
   const logout = async () => {
-    await authAPI.logout();
+    await adminApi.post("/auth/logout");
     setUser(null);
   };
 
