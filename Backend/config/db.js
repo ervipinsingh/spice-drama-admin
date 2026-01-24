@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 
 export const connectDB = async () => {
-  await mongoose
-    .connect(
-      "mongodb+srv://spice-drama:22atulVERMA@spice-drama-db.kzfylbu.mongodb.net/resturant ",
-    )
-    .then(() => console.log("DB Connected"));
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("✅ DB Connected");
+  } catch (error) {
+    console.error("❌ DB connection failed:", error.message);
+    process.exit(1);
+  }
 };
