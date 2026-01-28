@@ -4,7 +4,6 @@ import adminApi from "../services/adminApi";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  // 🔥 Load user from localStorage first
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("admin_user");
     return savedUser ? JSON.parse(savedUser) : null;
@@ -16,15 +15,15 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  /* ---------------- CHECK AUTH ---------------- */
+  /* ---------------- SAFE CHECK AUTH ---------------- */
   const checkAuth = async () => {
     try {
       const response = await adminApi.get("/auth/me");
       setUser(response.data.user);
       localStorage.setItem("admin_user", JSON.stringify(response.data.user));
     } catch (error) {
-      setUser(null);
-      localStorage.removeItem("admin_user");
+      // ❌ DO NOT logout user on refresh failure
+      console.warn("Auth check failed, keeping existing session");
     } finally {
       setLoading(false);
     }
@@ -52,7 +51,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
