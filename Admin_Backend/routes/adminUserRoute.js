@@ -11,10 +11,10 @@ import {
 const adminUserRouter = express.Router();
 
 // List all users - Any authenticated admin can view
-adminUserRouter.get("/list", isAuthenticated, listUsers);
+adminUserRouter.get("/list", listUsers);
 
 // Get single user details
-adminUserRouter.get("/details/:id", isAuthenticated, getUserDetails);
+adminUserRouter.get("/details/:id", getUserDetails);
 
 // Delete user - Only super_admin can delete
 adminUserRouter.delete("/delete/:id", hasRole("super_admin"), deleteUser);
