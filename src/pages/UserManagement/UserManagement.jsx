@@ -78,7 +78,7 @@ export default function UserManagement() {
     (user) =>
       (user.username || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.role || "").toLowerCase().includes(searchTerm.toLowerCase())
+      (user.role || "").toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const roleStyles = {
@@ -137,86 +137,161 @@ export default function UserManagement() {
 
       {/* ADD USER FORM */}
       {showForm && (
-        <div className="bg-white rounded-xl shadow p-5 w-full sm:max-w-lg">
-          <h2 className="font-semibold text-lg mb-4">Create New User</h2>
-
-          <form onSubmit={handleCreateUser} className="space-y-3">
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8 w-full sm:max-w-2xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+              <UserPlus className="text-orange-600" size={20} />
+            </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Username
-              </label>
-              <input
-                type="text"
-                placeholder="Enter username"
-                value={newUser.username}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, username: e.target.value })
-                }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 
-                           focus:ring-2 focus:ring-orange-400 outline-none"
-                required
-              />
+              <h2 className="font-bold text-xl text-gray-800">
+                Create New User
+              </h2>
+              <p className="text-xs text-gray-500">
+                Add a new user to the system
+              </p>
+            </div>
+          </div>
+
+          <form onSubmit={handleCreateUser} className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Username Field */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Username <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Edit className="text-gray-400" size={16} />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="johndoe"
+                    value={newUser.username}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, username: e.target.value })
+                    }
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
+                               focus:ring-2 focus:ring-orange-400 focus:border-orange-400 
+                               outline-none transition-all bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Email Field */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <AlertCircle className="text-gray-400" size={16} />
+                  </div>
+                  <input
+                    type="email"
+                    placeholder="john@example.com"
+                    value={newUser.email}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, email: e.target.value })
+                    }
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
+                               focus:ring-2 focus:ring-orange-400 focus:border-orange-400 
+                               outline-none transition-all bg-white"
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
+            {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Password <span className="text-red-500">*</span>
               </label>
-              <input
-                type="email"
-                placeholder="Enter email"
-                value={newUser.email}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, email: e.target.value })
-                }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 
-                           focus:ring-2 focus:ring-orange-400 outline-none"
-                required
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Shield className="text-gray-400" size={16} />
+                </div>
+                <input
+                  type="password"
+                  placeholder="Enter a strong password"
+                  value={newUser.password}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, password: e.target.value })
+                  }
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
+                             focus:ring-2 focus:ring-orange-400 focus:border-orange-400 
+                             outline-none transition-all bg-white"
+                  required
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1.5">
+                Minimum 6 characters recommended
+              </p>
             </div>
 
+            {/* Role Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                User Role <span className="text-red-500">*</span>
               </label>
-              <input
-                type="password"
-                placeholder="Enter password"
-                value={newUser.password}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, password: e.target.value })
-                }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 
-                           focus:ring-2 focus:ring-orange-400 outline-none"
-                required
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  {roleIcons[newUser.role]}
+                </div>
+                <select
+                  value={newUser.role}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, role: e.target.value })
+                  }
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
+                             focus:ring-2 focus:ring-orange-400 focus:border-orange-400 
+                             outline-none transition-all bg-white appearance-none cursor-pointer"
+                >
+                  <option value="admin">👑 Admin - Full system access</option>
+                  <option value="editor">✏️ Editor - Can edit content</option>
+                  <option value="viewer">👁️ Viewer - View only access</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Role
-              </label>
-              <select
-                value={newUser.role}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, role: e.target.value })
-                }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2
-                           focus:ring-2 focus:ring-orange-400 outline-none"
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="flex-1 sm:flex-none sm:px-6 bg-gray-100 hover:bg-gray-200 
+                           text-gray-700 py-3 rounded-xl transition-all font-semibold
+                           border border-gray-200"
               >
-                <option value="admin">Admin</option>
-                <option value="editor">Editor</option>
-                <option value="viewer">Viewer</option>
-              </select>
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 bg-gradient-to-r from-green-600 to-green-500 
+                           hover:from-green-700 hover:to-green-600 
+                           text-white py-3 px-8 rounded-xl transition-all font-semibold
+                           shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                <Check size={18} />
+                Create User
+              </button>
             </div>
-
-            <button
-              type="submit"
-              className="w-full bg-green-600 hover:bg-green-700 
-                         text-white py-2.5 rounded-lg transition font-medium"
-            >
-              Create User
-            </button>
           </form>
         </div>
       )}
