@@ -6,6 +6,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 
+// Only admin-related routes
+import foodRouter from "./routes/foodRoutes.js";
+import orderRouter from "./routes/orderRoute.js";
+
 dotenv.config();
 const app = express();
 
@@ -28,13 +32,10 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow server-to-server & Postman
       if (!origin) return callback(null, true);
-
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-
       console.warn("Blocked by CORS:", origin);
       return callback(null, false);
     },
@@ -55,7 +56,7 @@ app.use(
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: process.env.MONGODB_URI,
-      ttl: 60 * 60 * 24 * 7, // 7 days
+      ttl: 60 * 60 * 24 * 7,
     }),
     cookie: {
       secure: process.env.NODE_ENV === "production",
@@ -66,8 +67,13 @@ app.use(
   }),
 );
 
+/* ---------------- STATIC FILES ---------------- */
+app.use("/images", express.static("uploads"));
+
 /* ---------------- ROUTES ---------------- */
 app.use("/api/auth", authRoutes);
+app.use("/api/food", foodRouter);
+app.use("/api/order", orderRouter);
 
 /* ---------------- HEALTH ---------------- */
 app.get("/api/health", (req, res) => {
