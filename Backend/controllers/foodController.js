@@ -3,6 +3,10 @@ import fs from "fs";
 
 // ADD FOOD (already working)
 const addFood = async (req, res) => {
+  console.log("🔥 addFood HIT");
+  console.log("BODY:", req.body);
+  console.log("FILE:", req.file);
+
   try {
     const { name, description, price, category } = req.body;
 
