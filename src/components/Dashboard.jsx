@@ -163,19 +163,24 @@ export default function Dashboard() {
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="hidden sm:block text-right">
-                <p className="text-sm font-medium text-gray-800">
+              {/* User Info */}
+              <div className="hidden sm:flex flex-col text-right leading-tight">
+                <span className="text-sm font-semibold text-gray-800">
                   {user?.username || "Admin"}
-                </p>
-                <p className="text-xs text-gray-500 capitalize">
+                </span>
+                <span className="text-xs text-gray-500 capitalize">
                   {user?.role || "admin"}
-                </p>
+                </span>
               </div>
-              <img
-                src="/profile.png"
-                className="h-8 w-8 rounded-full"
-                alt="profile"
-              />
+
+              {/* Avatar */}
+              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border">
+                <img
+                  src="/profile.png"
+                  alt="profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </header>
