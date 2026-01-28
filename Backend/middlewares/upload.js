@@ -12,4 +12,6 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
+console.log("🔥 CLOUDINARY UPLOAD MIDDLEWARE HIT");
+
 export default upload;
