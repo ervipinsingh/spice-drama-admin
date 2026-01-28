@@ -4,6 +4,9 @@ import cloudinary from "../config/cloudinary.js";
 /* ---------------- ADD FOOD ---------------- */
 const addFood = async (req, res) => {
   try {
+    console.log("🔥 ADD FOOD API HIT");
+    console.log("📦 req.file =", req.file); // 🔥 MAIN DEBUG
+
     const { name, description, price, category } = req.body;
 
     if (!name || !price || !category) {
@@ -19,6 +22,8 @@ const addFood = async (req, res) => {
         message: "Image is required",
       });
     }
+
+    console.log("🌐 IMAGE PATH =", req.file.path); // 🔥 SHOULD BE CLOUDINARY URL
 
     const food = new foodModel({
       name,
@@ -64,9 +69,9 @@ const removeFood = async (req, res) => {
       return res.json({ success: false, message: "Food not found" });
     }
 
-    // 🔥 Delete image from Cloudinary
     if (food.image) {
       const publicId = food.image.split("/").pop().split(".")[0];
+      console.log("🗑️ Deleting Cloudinary image:", publicId);
       await cloudinary.uploader.destroy(`food-items/${publicId}`);
     }
 
@@ -93,19 +98,23 @@ const getSingleFood = async (req, res) => {
 /* ---------------- UPDATE FOOD ---------------- */
 const updateFood = async (req, res) => {
   try {
+    console.log("🔥 UPDATE FOOD API HIT");
+    console.log("📦 req.file =", req.file); // 🔥 DEBUG
+
     const food = await foodModel.findById(req.params.id);
 
     if (!food) {
       return res.json({ success: false, message: "Food not found" });
     }
 
-    // 🔥 If new image uploaded → delete old Cloudinary image
     if (req.file) {
       if (food.image) {
         const publicId = food.image.split("/").pop().split(".")[0];
+        console.log("🗑️ Deleting old image:", publicId);
         await cloudinary.uploader.destroy(`food-items/${publicId}`);
       }
-      food.image = req.file.path; // ✅ NEW Cloudinary URL
+      console.log("🌐 NEW IMAGE PATH =", req.file.path);
+      food.image = req.file.path;
     }
 
     food.name = req.body.name ?? food.name;
