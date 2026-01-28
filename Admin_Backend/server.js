@@ -9,7 +9,7 @@ import authRoutes from "./routes/auth.js";
 dotenv.config();
 const app = express();
 
-/* ---------------- TRUST PROXY (RENDER FIX) ---------------- */
+/* ---------------- TRUST PROXY (RENDER) ---------------- */
 app.set("trust proxy", 1);
 
 /* ---------------- DATABASE ---------------- */
@@ -28,15 +28,15 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow server-to-server & Postman
+      // allow server-to-server / Postman
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      console.warn("Blocked by CORS:", origin);
-      return callback(null, false);
+      console.error("❌ CORS blocked:", origin);
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   }),
@@ -53,14 +53,15 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    proxy: true, // 🔥 IMPORTANT for Render
     store: MongoStore.create({
       mongoUrl: process.env.MONGODB_URI,
       ttl: 60 * 60 * 24 * 7, // 7 days
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: true, // 🔥 Render + Vercel = HTTPS
+      sameSite: "none", // 🔥 Cross-site cookie
       maxAge: 1000 * 60 * 60 * 24 * 7,
     },
   }),

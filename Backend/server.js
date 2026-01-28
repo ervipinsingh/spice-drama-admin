@@ -10,7 +10,10 @@ import "dotenv/config";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-/* ---------------- CORS CONFIG (IMPORTANT) ---------------- */
+/* ---------------- TRUST PROXY (RENDER) ---------------- */
+app.set("trust proxy", 1);
+
+/* ---------------- CORS CONFIG ---------------- */
 const allowedOrigins = [
   "http://localhost:5173",
   "https://spice-drama-admin.vercel.app",
@@ -19,12 +22,15 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // Postman / server
+    origin: (origin, callback) => {
+      // allow server-to-server / Postman
+      if (!origin) return callback(null, true);
+
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      console.warn("Blocked by CORS:", origin);
+
+      console.error("❌ CORS blocked:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
@@ -35,24 +41,26 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* ---------------- DB CONNECTION ---------------- */
+/* ---------------- DB ---------------- */
 connectDB();
 
-/* ---------------- STATIC FILES ---------------- */
+/* ---------------- STATIC ---------------- */
 app.use("/images", express.static("uploads"));
 
 /* ---------------- ROUTES ---------------- */
+// 🔓 TEMP PUBLIC (for testing)
+// ⚠️ JWT lagne ke baad protect karna
 app.use("/api/food", foodRouter);
 app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 
-/* ---------------- HEALTH CHECK ---------------- */
-app.get("/", (req, res) => {
-  res.send("API Working 🚀");
+/* ---------------- HEALTH ---------------- */
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", service: "dashboard-backend" });
 });
 
 /* ---------------- SERVER ---------------- */
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Dashboard backend running on port ${PORT}`);
 });
