@@ -37,7 +37,7 @@ export default function Dashboard() {
           bg-gradient-to-b from-orange-600 to-red-700 text-white
           transition-all duration-300
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-          w-64 lg:w-64
+          w-64
           flex flex-col
         `}
       >
@@ -71,8 +71,7 @@ export default function Dashboard() {
             <NavLink
               to="/add"
               className={({ isActive }) =>
-                `flex items-center gap-3 p-3 rounded-lg transition
-                ${
+                `flex items-center gap-3 p-3 rounded-lg transition ${
                   isActive
                     ? "bg-white text-orange-600 shadow"
                     : "hover:bg-orange-500"
@@ -89,8 +88,7 @@ export default function Dashboard() {
             <NavLink
               to="/list"
               className={({ isActive }) =>
-                `flex items-center gap-3 p-3 rounded-lg transition
-                ${
+                `flex items-center gap-3 p-3 rounded-lg transition ${
                   isActive
                     ? "bg-white text-orange-600 shadow"
                     : "hover:bg-orange-500"
@@ -106,8 +104,7 @@ export default function Dashboard() {
           <NavLink
             to="/orders"
             className={({ isActive }) =>
-              `flex items-center gap-3 p-3 rounded-lg transition
-              ${
+              `flex items-center gap-3 p-3 rounded-lg transition ${
                 isActive
                   ? "bg-white text-orange-600 shadow"
                   : "hover:bg-orange-500"
@@ -123,8 +120,7 @@ export default function Dashboard() {
             <NavLink
               to="/users"
               className={({ isActive }) =>
-                `flex items-center gap-3 p-3 rounded-lg transition
-                ${
+                `flex items-center gap-3 p-3 rounded-lg transition ${
                   isActive
                     ? "bg-white text-orange-600 shadow"
                     : "hover:bg-orange-500"
@@ -152,9 +148,10 @@ export default function Dashboard() {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* TOP BAR */}
-        <header className="bg-white shadow border-b z-20">
-          <div className="flex items-center justify-between px-4 sm:px-6 py-3">
+        {/* TOP BAR (✅ FIXED HERE) */}
+        <header className="bg-white border-b shadow z-20">
+          <div className="h-16 px-4 sm:px-6 flex items-center justify-between">
+            {/* Mobile menu button */}
             <button
               onClick={() => setSidebarOpen(true)}
               className="p-2 hover:bg-gray-100 rounded-lg lg:hidden"
@@ -162,8 +159,8 @@ export default function Dashboard() {
               <Menu />
             </button>
 
-            <div className="flex items-center gap-3">
-              {/* User Info */}
+            {/* Profile */}
+            <div className="flex items-center gap-3 ml-auto">
               <div className="hidden sm:flex flex-col text-right leading-tight">
                 <span className="text-sm font-semibold text-gray-800">
                   {user?.username || "Admin"}
@@ -173,8 +170,7 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Avatar */}
-              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border">
+              <div className="w-9 h-9 rounded-full bg-gray-100 border flex items-center justify-center overflow-hidden">
                 <img
                   src="/profile.png"
                   alt="profile"
