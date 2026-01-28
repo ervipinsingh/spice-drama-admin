@@ -1,5 +1,7 @@
 import express from "express";
 import multer from "multer";
+import fs from "fs";
+import path from "path";
 import { isAuthenticated, hasRole } from "../middleware/auth.js";
 import {
   addFood,
@@ -11,11 +13,22 @@ import {
 
 const foodRouter = express.Router();
 
+/* ---------------- ENSURE UPLOADS FOLDER EXISTS ---------------- */
+const uploadDir = path.join(process.cwd(), "uploads");
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+  console.log("📁 uploads folder created");
+}
+
 /* ---------------- MULTER CONFIG ---------------- */
 const storage = multer.diskStorage({
-  destination: "uploads",
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    const uniqueName = `${Date.now()}-${file.originalname}`;
+    cb(null, uniqueName);
   },
 });
 
