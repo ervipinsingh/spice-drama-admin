@@ -3,7 +3,7 @@ import { Edit, Trash2, Eye, PlusCircle, Search, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import foodApi from "../../services/foodApi";
+import userApi from "../../services/userApi";
 
 export default function List() {
   const [list, setList] = useState([]);
@@ -15,7 +15,7 @@ export default function List() {
   /* ---------------- FETCH LIST ---------------- */
   const fetchList = async () => {
     try {
-      const response = await foodApi.get("/food/list");
+      const response = await userApi.get("/food/list");
       if (response.data.success) {
         setList(response.data.data);
       }
@@ -28,7 +28,7 @@ export default function List() {
   const remove = async (foodId) => {
     if (!window.confirm("Delete this item?")) return;
     try {
-      const response = await foodApi.post("/food/remove", { id: foodId });
+      const response = await userApi.post("/food/remove", { id: foodId });
       if (response.data.success) {
         toast.success(response.data.message);
         fetchList();
@@ -41,6 +41,7 @@ export default function List() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchList();
   }, []);
 
@@ -49,6 +50,7 @@ export default function List() {
   );
 
   return (
+    /* THIS IS THE CRITICAL FIX */
     <div className="h-full w-full min-w-0 overflow-y-auto overflow-x-hidden">
       <div className="space-y-4 sm:space-y-5 px-3 sm:px-4 lg:px-6 py-4 pb-24">
         {/* HEADER */}
@@ -64,7 +66,7 @@ export default function List() {
 
           <button
             onClick={() => navigate("/add")}
-            className="flex items-center justify-center gap-2 
+            className="cursor-pointer flex items-center justify-center gap-2 
                        bg-orange-500 hover:bg-orange-600 
                        text-white px-4 py-2 rounded-lg 
                        w-full sm:w-auto shadow-sm transition-all
@@ -105,7 +107,7 @@ export default function List() {
               >
                 <div className="flex gap-3">
                   <img
-                    src={item.image}
+                    src={`${import.meta.env.VITE_USER_API}/images/${item.image}`}
                     alt={item.name}
                     className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
                   />
@@ -167,9 +169,8 @@ export default function List() {
                 <tr key={item._id} className="border-t">
                   <td className="px-4 py-3 flex items-center gap-3">
                     <img
-                      src={item.image}
+                      src={`${import.meta.env.VITE_USER_API}/images/${item.image}`}
                       className="w-10 h-10 rounded object-cover"
-                      alt={item.name}
                     />
                     {item.name}
                   </td>
@@ -219,7 +220,7 @@ export default function List() {
             onClick={() => setViewItem(null)}
           >
             <motion.div
-              className="bg-white rounded-xl w-full max-w-md overflow-hidden relative"
+              className="bg-white rounded-xl w-full max-w-md overflow-hidden"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
@@ -233,9 +234,8 @@ export default function List() {
               </button>
 
               <img
-                src={viewItem.image}
+                src={`${import.meta.env.VITE_USER_API}/images/${viewItem.image}`}
                 className="w-full h-48 object-cover"
-                alt={viewItem.name}
               />
 
               <div className="p-4 space-y-2">

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Upload } from "lucide-react";
 import { toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
-import foodApi from "../../services/foodApi";
+import userApi from "../../services/userApi";
 
 export default function AddItems() {
   const { id } = useParams();
@@ -23,17 +23,15 @@ export default function AddItems() {
     if (id) {
       const fetchItem = async () => {
         try {
-          const res = await foodApi.get(`/food/single/${id}`);
+          const res = await userApi.get(`/food/single/${id}`);
           if (res.data.success) {
             setData({
-              name: res.data.data.name || "",
-              description: res.data.data.description || "",
-              category: res.data.data.category || "",
-              price: res.data.data.price || "",
+              name: res.data.data.name,
+              description: res.data.data.description,
+              category: res.data.data.category,
+              price: res.data.data.price,
             });
-
-            // Cloudinary URL directly
-            setOldImage(res.data.data.image || "");
+            setOldImage(res.data.data.image);
           }
         } catch (err) {
           toast.error("Failed to load item");
@@ -49,23 +47,11 @@ export default function AddItems() {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
-  /* ---------------- IMAGE HANDLER ---------------- */
-  const imageHandler = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Only image files are allowed");
-      return;
-    }
-
-    setImage(file);
-  };
-
   /* ---------------- SUBMIT HANDLER ---------------- */
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
+    // BASIC VALIDATION
     if (!data.name || !data.category || !data.price) {
       toast.error("Please fill all required fields");
       return;
@@ -85,20 +71,25 @@ export default function AddItems() {
       let response;
 
       if (id) {
-        response = await foodApi.put(`/food/update/${id}`, formData);
+        response = await userApi.put(`/food/update/${id}`, formData);
       } else {
-        response = await foodApi.post("/food/add", formData);
+        response = await userApi.post("/food/add", formData);
       }
+
+      console.log("API RESPONSE", response.data);
 
       if (response.data.success) {
         toast.success(
           id ? "Item updated successfully" : "Item added successfully",
         );
+
+        // ✅ CORRECT REDIRECT
         navigate("/list");
       } else {
         toast.error(response.data.message || "Operation failed");
       }
     } catch (error) {
+      console.error("ADD ITEM ERROR", error.response?.data || error);
       toast.error(error.response?.data?.message || "Server error");
     }
   };
@@ -127,18 +118,16 @@ export default function AddItems() {
                 Product Image
               </label>
 
-              <label className="h-40 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer overflow-hidden">
+              <label className="h-40 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer">
                 {image ? (
                   <img
                     src={URL.createObjectURL(image)}
                     className="w-full h-full object-cover"
-                    alt="preview"
                   />
                 ) : oldImage ? (
                   <img
-                    src={oldImage} // Cloudinary URL
+                    src={`${import.meta.env.VITE_USER_API}/images/${oldImage}`}
                     className="w-full h-full object-cover"
-                    alt="old"
                   />
                 ) : (
                   <div className="text-gray-400 text-center">
@@ -146,12 +135,11 @@ export default function AddItems() {
                     Upload Image
                   </div>
                 )}
-
                 <input
                   type="file"
                   hidden
                   accept="image/*"
-                  onChange={imageHandler}
+                  onChange={(e) => setImage(e.target.files[0])}
                 />
               </label>
 
@@ -211,7 +199,7 @@ export default function AddItems() {
             <div className="p-4 border-t bg-gray-50">
               <button
                 type="submit"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg cursor-pointer"
               >
                 {id ? "Update Item" : "Add Item"}
               </button>

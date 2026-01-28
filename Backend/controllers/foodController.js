@@ -1,14 +1,12 @@
 import foodModel from "../models/foodModel.js";
-import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
 
-/* ---------------- ADD FOOD ---------------- */
+// ADD FOOD
 const addFood = async (req, res) => {
   try {
-    console.log("🔥 ADD FOOD API HIT");
-    console.log("📦 req.file =", req.file); // 🔥 MAIN DEBUG
-
     const { name, description, price, category } = req.body;
 
+    // BASIC VALIDATION
     if (!name || !price || !category) {
       return res.json({
         success: false,
@@ -16,21 +14,15 @@ const addFood = async (req, res) => {
       });
     }
 
-    if (!req.file) {
-      return res.json({
-        success: false,
-        message: "Image is required",
-      });
-    }
-
-    console.log("🌐 IMAGE PATH =", req.file.path); // 🔥 SHOULD BE CLOUDINARY URL
+    // SAFE IMAGE HANDLING
+    const image_filename = req.file ? req.file.filename : "";
 
     const food = new foodModel({
       name,
       description,
       price,
       category,
-      image: req.file.path, // ✅ CLOUDINARY URL
+      image: image_filename,
     });
 
     await food.save();
@@ -38,7 +30,6 @@ const addFood = async (req, res) => {
     res.json({
       success: true,
       message: "Food added successfully",
-      data: food,
     });
   } catch (error) {
     console.error("ADD FOOD ERROR 👉", error);
@@ -49,7 +40,7 @@ const addFood = async (req, res) => {
   }
 };
 
-/* ---------------- LIST FOOD ---------------- */
+// LIST FOOD
 const listFood = async (req, res) => {
   try {
     const foods = await foodModel.find({});
@@ -60,23 +51,15 @@ const listFood = async (req, res) => {
   }
 };
 
-/* ---------------- REMOVE FOOD ---------------- */
+// REMOVE FOOD
 const removeFood = async (req, res) => {
   try {
     const food = await foodModel.findById(req.body.id);
 
-    if (!food) {
-      return res.json({ success: false, message: "Food not found" });
-    }
-
-    if (food.image) {
-      const publicId = food.image.split("/").pop().split(".")[0];
-      console.log("🗑️ Deleting Cloudinary image:", publicId);
-      await cloudinary.uploader.destroy(`food-items/${publicId}`);
-    }
+    // remove image
+    fs.unlink(`uploads/${food.image}`, () => {});
 
     await foodModel.findByIdAndDelete(req.body.id);
-
     res.json({ success: true, message: "Food removed successfully" });
   } catch (error) {
     console.log(error);
@@ -84,7 +67,7 @@ const removeFood = async (req, res) => {
   }
 };
 
-/* ---------------- GET SINGLE FOOD ---------------- */
+// GET SINGLE FOOD (FOR EDIT)
 const getSingleFood = async (req, res) => {
   try {
     const food = await foodModel.findById(req.params.id);
@@ -95,40 +78,30 @@ const getSingleFood = async (req, res) => {
   }
 };
 
-/* ---------------- UPDATE FOOD ---------------- */
+// UPDATE FOOD (EDIT MODE)
 const updateFood = async (req, res) => {
   try {
-    console.log("🔥 UPDATE FOOD API HIT");
-    console.log("📦 req.file =", req.file); // 🔥 DEBUG
-
     const food = await foodModel.findById(req.params.id);
 
     if (!food) {
       return res.json({ success: false, message: "Food not found" });
     }
 
+    // If new image uploaded → delete old image
     if (req.file) {
-      if (food.image) {
-        const publicId = food.image.split("/").pop().split(".")[0];
-        console.log("🗑️ Deleting old image:", publicId);
-        await cloudinary.uploader.destroy(`food-items/${publicId}`);
-      }
-      console.log("🌐 NEW IMAGE PATH =", req.file.path);
-      food.image = req.file.path;
+      fs.unlink(`uploads/${food.image}`, () => {});
+      food.image = req.file.filename;
     }
 
-    food.name = req.body.name ?? food.name;
-    food.description = req.body.description ?? food.description;
-    food.category = req.body.category ?? food.category;
-    food.price = req.body.price ?? food.price;
+    // Update fields
+    food.name = req.body.name;
+    food.description = req.body.description;
+    food.category = req.body.category;
+    food.price = req.body.price;
 
     await food.save();
 
-    res.json({
-      success: true,
-      message: "Food updated successfully",
-      data: food,
-    });
+    res.json({ success: true, message: "Food updated successfully" });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: "Error updating food" });
