@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Upload } from "lucide-react";
 import { toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
-import userApi from "../../services/userApi";
+import foodApi from "../../services/foodApi";
 
 export default function AddItems() {
   const { id } = useParams();
@@ -23,7 +23,7 @@ export default function AddItems() {
     if (id) {
       const fetchItem = async () => {
         try {
-          const res = await userApi.get(`/food/single/${id}`);
+          const res = await foodApi.get(`/food/single/${id}`);
           if (res.data.success) {
             setData({
               name: res.data.data.name || "",
@@ -85,9 +85,9 @@ export default function AddItems() {
       let response;
 
       if (id) {
-        response = await userApi.put(`/food/update/${id}`, formData);
+        response = await foodApi.put(`/food/update/${id}`, formData);
       } else {
-        response = await userApi.post("/food/add", formData);
+        response = await foodApi.post("/food/add", formData);
       }
 
       if (response.data.success) {
