@@ -1,8 +1,6 @@
 import express from "express";
-import multer from "multer";
-import fs from "fs";
-import path from "path";
 import { isAuthenticated, hasRole } from "../middleware/auth.js";
+import upload from "../middleware/upload.js"; // 🔥 Cloudinary + Multer
 import {
   addFood,
   listFood,
@@ -13,27 +11,6 @@ import {
 
 const foodRouter = express.Router();
 
-/* ---------------- ENSURE UPLOADS FOLDER EXISTS ---------------- */
-const uploadDir = path.join(process.cwd(), "uploads");
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-  console.log("uploads folder created");
-}
-
-/* ---------------- MULTER CONFIG ---------------- */
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${file.originalname}`;
-    cb(null, uniqueName);
-  },
-});
-
-const upload = multer({ storage });
-
 /* ---------------- ROUTES ---------------- */
 
 // ADD FOOD (admin & super_admin)
@@ -41,14 +18,14 @@ foodRouter.post(
   "/add",
   isAuthenticated,
   hasRole("super_admin", "admin"),
-  upload.single("image"),
+  upload.single("image"), // 🔥 Cloudinary upload
   addFood,
 );
 
-// LIST FOOD (any authenticated admin)
+// LIST FOOD
 foodRouter.get("/list", isAuthenticated, listFood);
 
-// REMOVE FOOD (admin & super_admin)
+// REMOVE FOOD
 foodRouter.post(
   "/remove",
   isAuthenticated,
@@ -56,15 +33,15 @@ foodRouter.post(
   removeFood,
 );
 
-// GET SINGLE FOOD (for edit)
+// GET SINGLE FOOD (edit mode)
 foodRouter.get("/single/:id", isAuthenticated, getSingleFood);
 
-// UPDATE FOOD (admin & super_admin)
+// UPDATE FOOD
 foodRouter.put(
   "/update/:id",
   isAuthenticated,
   hasRole("super_admin", "admin"),
-  upload.single("image"),
+  upload.single("image"), // 🔥 Cloudinary upload
   updateFood,
 );
 

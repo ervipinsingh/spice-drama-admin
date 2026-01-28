@@ -26,12 +26,14 @@ export default function AddItems() {
           const res = await userApi.get(`/food/single/${id}`);
           if (res.data.success) {
             setData({
-              name: res.data.data.name,
-              description: res.data.data.description,
-              category: res.data.data.category,
-              price: res.data.data.price,
+              name: res.data.data.name || "",
+              description: res.data.data.description || "",
+              category: res.data.data.category || "",
+              price: res.data.data.price || "",
             });
-            setOldImage(res.data.data.image);
+
+            // Cloudinary URL directly
+            setOldImage(res.data.data.image || "");
           }
         } catch (err) {
           toast.error("Failed to load item");
@@ -47,11 +49,23 @@ export default function AddItems() {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /* ---------------- IMAGE HANDLER ---------------- */
+  const imageHandler = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed");
+      return;
+    }
+
+    setImage(file);
+  };
+
   /* ---------------- SUBMIT HANDLER ---------------- */
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
-    // BASIC VALIDATION
     if (!data.name || !data.category || !data.price) {
       toast.error("Please fill all required fields");
       return;
@@ -76,20 +90,15 @@ export default function AddItems() {
         response = await userApi.post("/food/add", formData);
       }
 
-      console.log("API RESPONSE", response.data);
-
       if (response.data.success) {
         toast.success(
           id ? "Item updated successfully" : "Item added successfully",
         );
-
-        // ✅ CORRECT REDIRECT
         navigate("/list");
       } else {
         toast.error(response.data.message || "Operation failed");
       }
     } catch (error) {
-      console.error("ADD ITEM ERROR", error.response?.data || error);
       toast.error(error.response?.data?.message || "Server error");
     }
   };
@@ -118,16 +127,18 @@ export default function AddItems() {
                 Product Image
               </label>
 
-              <label className="h-40 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer">
+              <label className="h-40 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer overflow-hidden">
                 {image ? (
                   <img
                     src={URL.createObjectURL(image)}
                     className="w-full h-full object-cover"
+                    alt="preview"
                   />
                 ) : oldImage ? (
                   <img
-                    src={`${import.meta.env.VITE_USER_API}/images/${oldImage}`}
+                    src={oldImage} // Cloudinary URL
                     className="w-full h-full object-cover"
+                    alt="old"
                   />
                 ) : (
                   <div className="text-gray-400 text-center">
@@ -135,11 +146,12 @@ export default function AddItems() {
                     Upload Image
                   </div>
                 )}
+
                 <input
                   type="file"
                   hidden
                   accept="image/*"
-                  onChange={(e) => setImage(e.target.files[0])}
+                  onChange={imageHandler}
                 />
               </label>
 
@@ -199,7 +211,7 @@ export default function AddItems() {
             <div className="p-4 border-t bg-gray-50">
               <button
                 type="submit"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg cursor-pointer"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg"
               >
                 {id ? "Update Item" : "Add Item"}
               </button>
