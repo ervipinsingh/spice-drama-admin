@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login/Login";
@@ -13,51 +13,65 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 
-const App = () => {
-  // 🔑 BACKEND URLS
-  const adminUrl = import.meta.env.VITE_ADMIN_API; // admin backend
-  const userUrl = import.meta.env.VITE_USER_API; // user backend
+/* 🔐 ROUTES THAT WAIT FOR AUTH */
+const AppRoutes = () => {
+  const { loading } = useAuth();
 
+  // ⏳ IMPORTANT: wait till checkAuth finishes
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center text-lg">
+        Loading...
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      {/* ---------------- LOGIN ---------------- */}
+      <Route path="/login" element={<Login />} />
+
+      {/* ---------------- PROTECTED DASHBOARD ---------------- */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      >
+        {/* Default route */}
+        <Route index element={<Navigate to="add" replace />} />
+
+        {/* ---------- FOOD & ORDERS (USER BACKEND) ---------- */}
+        <Route path="add" element={<Add />} />
+        <Route path="add/:id" element={<Add />} />
+        <Route path="list" element={<List />} />
+        <Route path="orders" element={<Orders />} />
+
+        {/* ---------- USERS (ADMIN BACKEND) ---------- */}
+        <Route
+          path="users"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <UserManagement />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
+
+      {/* ---------------- FALLBACK ---------------- */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+};
+
+const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
         <ToastContainer position="top-right" autoClose={3000} />
-        <Routes>
-          {/* ---------------- LOGIN ---------------- */}
-          <Route path="/login" element={<Login />} />
-
-          {/* ---------------- PROTECTED DASHBOARD ---------------- */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          >
-            {/* Default route */}
-            <Route index element={<Navigate to="add" replace />} />
-
-            {/* ---------- FOOD & ORDERS (USER BACKEND) ---------- */}
-            <Route path="add" element={<Add url={userUrl} />} />
-            <Route path="add/:id" element={<Add url={userUrl} />} />
-            <Route path="list" element={<List url={userUrl} />} />
-            <Route path="orders" element={<Orders url={userUrl} />} />
-
-            {/* ---------- USERS (ADMIN BACKEND) ---------- */}
-            <Route
-              path="users"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <UserManagement />
-                </ProtectedRoute>
-              }
-            />
-          </Route>
-
-          {/* ---------------- FALLBACK ---------------- */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AppRoutes />
       </AuthProvider>
     </BrowserRouter>
   );
