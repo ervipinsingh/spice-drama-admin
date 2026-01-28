@@ -10,7 +10,7 @@ const placeOrder = async (req, res) => {
       amount: req.body.amount,
       address: req.body.address,
       paymentMethod: "COD",
-      payment: false, // COD → payment collected later
+      payment: false,
       status: "Food Processing",
       createdAt: new Date(),
     });

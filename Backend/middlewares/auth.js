@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    // 🔑 Read token from Authorization header
+    // Read token from Authorization header
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -16,10 +16,10 @@ const authMiddleware = async (req, res, next) => {
 
     const token_decode = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = token_decode; // attach user
+    req.user = token_decode;
     next();
   } catch (error) {
-    console.log("AUTH ERROR 👉", error);
+    console.log("AUTH ERROR", error);
     return res.status(401).json({
       success: false,
       message: "Invalid or expired token",

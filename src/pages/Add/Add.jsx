@@ -51,7 +51,7 @@ export default function AddItems() {
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
-    // 🔒 BASIC VALIDATION
+    // BASIC VALIDATION
     if (!data.name || !data.category || !data.price) {
       toast.error("Please fill all required fields");
       return;
@@ -76,7 +76,7 @@ export default function AddItems() {
         response = await userApi.post("/food/add", formData);
       }
 
-      console.log("API RESPONSE 👉", response.data);
+      console.log("API RESPONSE", response.data);
 
       if (response.data.success) {
         toast.success(
@@ -89,7 +89,7 @@ export default function AddItems() {
         toast.error(response.data.message || "Operation failed");
       }
     } catch (error) {
-      console.error("ADD ITEM ERROR 👉", error.response?.data || error);
+      console.error("ADD ITEM ERROR", error.response?.data || error);
       toast.error(error.response?.data?.message || "Server error");
     }
   };

@@ -25,7 +25,7 @@ app.set("trust proxy", 1);
 const uploadDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
-  console.log("📁 uploads folder created");
+  console.log("uploads folder created");
 }
 
 /* ---------------- CORS CONFIG ---------------- */
@@ -45,7 +45,7 @@ app.use(
         return callback(null, true);
       }
 
-      console.error("❌ CORS blocked:", origin);
+      console.error("CORS blocked:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
@@ -81,7 +81,7 @@ app.get("/api/health", (req, res) => {
 
 /* ---------------- GLOBAL ERROR HANDLER ---------------- */
 app.use((err, req, res, next) => {
-  console.error("🔥 Global Error:", err.message);
+  console.error("Global Error:", err.message);
 
   res.status(500).json({
     success: false,
@@ -91,5 +91,5 @@ app.use((err, req, res, next) => {
 
 /* ---------------- SERVER ---------------- */
 app.listen(PORT, () => {
-  console.log(`🚀 Dashboard backend running on port ${PORT}`);
+  console.log(`Dashboard backend running on port ${PORT}`);
 });

@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
     const savedUser = localStorage.getItem("admin_user");
 
     if (token && savedUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUser(JSON.parse(savedUser));
     } else {
       setUser(null);
@@ -29,7 +30,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     const res = await adminApi.post("/auth/login", credentials);
 
-    // 🔐 SAVE JWT + USER
+    // SAVE JWT + USER
     localStorage.setItem("admin_token", res.data.token);
     localStorage.setItem("admin_user", JSON.stringify(res.data.user));
 
@@ -51,6 +52,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

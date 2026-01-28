@@ -1,7 +1,7 @@
 import foodModel from "../models/foodModel.js";
 import fs from "fs";
 
-// ADD FOOD (already working)
+// ADD FOOD
 const addFood = async (req, res) => {
   try {
     const { name, description, price, category } = req.body;

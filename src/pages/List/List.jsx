@@ -41,6 +41,7 @@ export default function List() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchList();
   }, []);
 
@@ -49,7 +50,7 @@ export default function List() {
   );
 
   return (
-    /* 🔥 THIS IS THE CRITICAL FIX */
+    /* THIS IS THE CRITICAL FIX */
     <div className="h-full w-full min-w-0 overflow-y-auto overflow-x-hidden">
       <div className="space-y-4 sm:space-y-5 px-3 sm:px-4 lg:px-6 py-4 pb-24">
         {/* HEADER */}

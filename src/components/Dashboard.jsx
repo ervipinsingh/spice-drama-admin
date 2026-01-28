@@ -148,7 +148,7 @@ export default function Dashboard() {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* TOP BAR (✅ FIXED HERE) */}
+        {/* TOP BAR */}
         <header className="bg-white border-b shadow z-20">
           <div className="h-16 px-4 sm:px-6 flex items-center justify-between">
             {/* Mobile menu button */}

@@ -1,5 +1,5 @@
 import express from "express";
-import { isAuthenticated, hasRole } from "../middleware/auth.js"; // Use Admin auth
+import { isAuthenticated, hasRole } from "../middleware/auth.js";
 import {
   listOrders,
   placeOrder,
@@ -16,10 +16,5 @@ orderRouter.get("/list", isAuthenticated, listOrders);
 
 // Update order status - Only super_admin and admin can update
 orderRouter.post("/status", hasRole("super_admin", "admin"), updateStatus);
-
-// CUSTOMER ROUTES - Keep these if needed for customer app
-// (These might not be needed in Admin_Backend, only in main Backend)
-// orderRouter.post("/place", authMiddleware, placeOrder);
-// orderRouter.post("/userorders", authMiddleware, userOrders);
 
 export default orderRouter;

@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { isAuthenticated, hasRole } from "../middleware/auth.js"; // Import your auth middleware
+import { isAuthenticated, hasRole } from "../middleware/auth.js";
 import {
   addFood,
   listFood,
@@ -20,8 +20,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-
-// Routes - Protected with authentication
 
 // Add Food - Only super_admin and admin can add
 foodRouter.post(

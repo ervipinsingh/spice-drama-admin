@@ -10,7 +10,7 @@ const app = express();
 /* ---------------- DB ---------------- */
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => console.log("✅ MongoDB connected"))
+  .then(() => console.log("MongoDB connected"))
   .catch(console.error);
 
 /* ---------------- CORS ---------------- */
@@ -28,4 +28,4 @@ app.use("/api/auth", authRoutes);
 
 /* ---------------- SERVER ---------------- */
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Admin backend running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Admin backend running on port ${PORT}`));

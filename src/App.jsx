@@ -13,11 +13,11 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 
-/* 🔐 ROUTES THAT WAIT FOR AUTH */
+/* ROUTES THAT WAIT FOR AUTH */
 const AppRoutes = () => {
   const { loading } = useAuth();
 
-  // ⏳ IMPORTANT: wait till checkAuth finishes
+  // IMPORTANT: wait till checkAuth finishes
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center text-lg">

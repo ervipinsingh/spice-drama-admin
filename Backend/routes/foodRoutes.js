@@ -18,7 +18,7 @@ const uploadDir = path.join(process.cwd(), "uploads");
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
-  console.log("📁 uploads folder created");
+  console.log("uploads folder created");
 }
 
 /* ---------------- MULTER CONFIG ---------------- */
@@ -36,7 +36,7 @@ const upload = multer({ storage });
 
 /* ---------------- ROUTES ---------------- */
 
-// ✅ ADD FOOD (admin & super_admin)
+// ADD FOOD (admin & super_admin)
 foodRouter.post(
   "/add",
   isAuthenticated,
@@ -45,10 +45,10 @@ foodRouter.post(
   addFood,
 );
 
-// ✅ LIST FOOD (any authenticated admin)
+// LIST FOOD (any authenticated admin)
 foodRouter.get("/list", isAuthenticated, listFood);
 
-// ✅ REMOVE FOOD (admin & super_admin)
+// REMOVE FOOD (admin & super_admin)
 foodRouter.post(
   "/remove",
   isAuthenticated,
@@ -56,10 +56,10 @@ foodRouter.post(
   removeFood,
 );
 
-// ✅ GET SINGLE FOOD (for edit)
+// GET SINGLE FOOD (for edit)
 foodRouter.get("/single/:id", isAuthenticated, getSingleFood);
 
-// ✅ UPDATE FOOD (admin & super_admin)
+// UPDATE FOOD (admin & super_admin)
 foodRouter.put(
   "/update/:id",
   isAuthenticated,
