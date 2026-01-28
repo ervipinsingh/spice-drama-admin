@@ -4,21 +4,39 @@ import fs from "fs";
 // ADD FOOD (already working)
 const addFood = async (req, res) => {
   try {
-    let image_filename = req.file.filename;
+    const { name, description, price, category } = req.body;
+
+    // BASIC VALIDATION
+    if (!name || !price || !category) {
+      return res.json({
+        success: false,
+        message: "Name, price and category are required",
+      });
+    }
+
+    // SAFE IMAGE HANDLING
+    const image_filename = req.file ? req.file.filename : "";
 
     const food = new foodModel({
-      name: req.body.name,
-      description: req.body.description,
-      price: req.body.price,
-      category: req.body.category,
+      name,
+      description,
+      price,
+      category,
       image: image_filename,
     });
 
     await food.save();
-    res.json({ success: true, message: "Food added successfully" });
+
+    res.json({
+      success: true,
+      message: "Food added successfully",
+    });
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: "Error adding food" });
+    console.error("ADD FOOD ERROR 👉", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while adding food",
+    });
   }
 };
 

@@ -33,7 +33,7 @@ export default function AddItems() {
             });
             setOldImage(res.data.data.image);
           }
-        } catch {
+        } catch (err) {
           toast.error("Failed to load item");
         }
       };
@@ -51,29 +51,46 @@ export default function AddItems() {
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
+    // 🔒 BASIC VALIDATION
+    if (!data.name || !data.category || !data.price) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
     try {
       const formData = new FormData();
-      formData.append("name", data.name);
-      formData.append("description", data.description);
-      formData.append("price", Number(data.price));
+      formData.append("name", data.name.trim());
+      formData.append("description", data.description.trim());
       formData.append("category", data.category);
+      formData.append("price", Number(data.price));
 
-      if (image) formData.append("image", image);
+      if (image) {
+        formData.append("image", image);
+      }
 
-      const response = id
-        ? await userApi.put(`/food/update/${id}`, formData)
-        : await userApi.post("/food/add", formData);
+      let response;
+
+      if (id) {
+        response = await userApi.put(`/food/update/${id}`, formData);
+      } else {
+        response = await userApi.post("/food/add", formData);
+      }
+
+      console.log("API RESPONSE 👉", response.data);
 
       if (response.data.success) {
         toast.success(
           id ? "Item updated successfully" : "Item added successfully",
         );
-        navigate("/");
+
+        // ✅ CORRECT REDIRECT
+        navigate("/list");
       } else {
-        toast.error("Operation failed");
+        toast.error(response.data.message || "Operation failed");
       }
-    } catch {
-      toast.error("Server error");
+    } catch (error) {
+      console.error("ADD ITEM ERROR 👉", error.response?.data || error);
+      toast.error(error.response?.data?.message || "Server error");
     }
   };
 
@@ -82,11 +99,11 @@ export default function AddItems() {
       <form onSubmit={onSubmitHandler}>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* HEADER */}
-          <div className="text-center sm:text-left">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
               {id ? "Edit Item" : "Add New Item"}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-gray-600">
               {id
                 ? "Update your menu item"
                 : "Add a new menu item to your restaurant"}
@@ -94,91 +111,65 @@ export default function AddItems() {
           </div>
 
           {/* CARD */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="bg-white rounded-xl shadow border">
             <div className="p-4 sm:p-6 space-y-6">
-              {/* IMAGE UPLOAD */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Product Image
-                </label>
+              {/* IMAGE */}
+              <label className="block font-semibold text-gray-700">
+                Product Image
+              </label>
 
-                <label
-                  className="w-full h-36 sm:h-44 flex items-center justify-center 
-                                  border-2 border-dashed border-gray-300 
-                                  rounded-lg cursor-pointer 
-                                  hover:border-orange-500 hover:bg-orange-50 
-                                  transition relative overflow-hidden"
-                >
-                  {image ? (
-                    <img
-                      src={URL.createObjectURL(image)}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : oldImage ? (
-                    <img
-                      src={`${import.meta.env.VITE_USER_API}/images/${oldImage}`}
-                      alt="Old"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center text-gray-500">
-                      <Upload className="w-8 h-8 sm:w-10 sm:h-10 mb-2" />
-                      <span className="text-xs sm:text-sm">
-                        Tap to upload image
-                      </span>
-                    </div>
-                  )}
-
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImage(e.target.files[0])}
-                    className="hidden"
+              <label className="h-40 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer">
+                {image ? (
+                  <img
+                    src={URL.createObjectURL(image)}
+                    className="w-full h-full object-cover"
                   />
-                </label>
-              </div>
+                ) : oldImage ? (
+                  <img
+                    src={`${import.meta.env.VITE_USER_API}/images/${oldImage}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-gray-400 text-center">
+                    <Upload className="mx-auto mb-2" />
+                    Upload Image
+                  </div>
+                )}
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={(e) => setImage(e.target.files[0])}
+                />
+              </label>
 
               {/* NAME */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Product Name
-                </label>
-                <input
-                  name="name"
-                  value={data.name}
-                  onChange={onChangeHandler}
-                  type="text"
-                  className="w-full px-4 py-3 border rounded-lg 
-                             focus:ring-2 focus:ring-orange-500 outline-none"
-                  required
-                />
-              </div>
+              <input
+                name="name"
+                placeholder="Product Name"
+                value={data.name}
+                onChange={onChangeHandler}
+                className="w-full px-4 py-3 border rounded-lg"
+                required
+              />
 
               {/* DESCRIPTION */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Product Description
-                </label>
-                <textarea
-                  name="description"
-                  value={data.description}
-                  onChange={onChangeHandler}
-                  rows="4"
-                  className="w-full px-4 py-3 border rounded-lg 
-                             focus:ring-2 focus:ring-orange-500 outline-none"
-                  required
-                />
-              </div>
+              <textarea
+                name="description"
+                placeholder="Description"
+                value={data.description}
+                onChange={onChangeHandler}
+                rows="4"
+                className="w-full px-4 py-3 border rounded-lg"
+              />
 
-              {/* CATEGORY & PRICE */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              {/* CATEGORY + PRICE */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <select
                   name="category"
                   value={data.category}
                   onChange={onChangeHandler}
-                  className="w-full px-4 py-3 border rounded-lg 
-                             focus:ring-2 focus:ring-orange-500 outline-none"
+                  className="px-4 py-3 border rounded-lg"
                   required
                 >
                   <option value="">Select Category</option>
@@ -189,39 +180,28 @@ export default function AddItems() {
                   <option>Egg</option>
                   <option>Fish</option>
                   <option>Paneer</option>
-                  <option>Curries</option>
                   <option>Rice</option>
-                  <option>Roti</option>
                   <option>Noodles</option>
-                  <option>Maggi</option>
-                  <option>Snacks</option>
-                  <option>Desserts</option>
-                  <option>Beverages</option>
                 </select>
 
                 <input
                   name="price"
-                  value={data.price}
-                  onChange={onChangeHandler}
                   type="number"
                   placeholder="Price"
-                  className="w-full px-4 py-3 border rounded-lg 
-                             focus:ring-2 focus:ring-orange-500 outline-none"
+                  value={data.price}
+                  onChange={onChangeHandler}
+                  className="px-4 py-3 border rounded-lg"
                   required
                 />
               </div>
             </div>
 
-            {/* FOOTER */}
-            <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t">
+            <div className="p-4 border-t bg-gray-50">
               <button
                 type="submit"
-                className="w-full sm:w-auto 
-                           px-6 py-2.5 
-                           bg-orange-500 text-white 
-                           rounded-lg hover:bg-orange-600 transition"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg"
               >
-                {id ? "Update Product" : "Add Product"}
+                {id ? "Update Item" : "Add Item"}
               </button>
             </div>
           </div>
