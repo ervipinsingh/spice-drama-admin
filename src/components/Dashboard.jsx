@@ -138,7 +138,7 @@ export default function Dashboard() {
         <div className="p-4 border-t border-orange-500">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 p-3 hover:bg-orange-500 rounded-lg"
+            className="w-full flex items-center justify-center gap-2 p-3 hover:bg-orange-500 rounded-lg cursor-pointer transition-all duration-300"
           >
             <LogOut size={18} />
             Logout

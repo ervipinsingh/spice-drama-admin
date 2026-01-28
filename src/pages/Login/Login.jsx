@@ -143,7 +143,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3.5 rounded-xl font-semibold shadow-md hover:shadow-lg transition disabled:opacity-50"
+              className="cursor-pointer w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3.5 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
               {loading ? (
                 <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
