@@ -1,10 +1,10 @@
 import axios from "axios";
 
 const adminApi = axios.create({
-  // 🔥 FOOD & ORDER admin actions user-backend pe jaayengi
-  baseURL: `${import.meta.env.VITE_USER_API}/api`,
+  baseURL: `${import.meta.env.VITE_ADMIN_API}/api`,
 });
 
+/* Attach JWT automatically */
 adminApi.interceptors.request.use((config) => {
   const token = localStorage.getItem("admin_token");
   if (token) {

@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 import { connectDB } from "./config/db.js";
 import foodRouter from "./routes/foodRoutes.js";
 import userRouter from "./routes/userRoute.js";
@@ -11,8 +14,19 @@ import "dotenv/config";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-/* ---------------- TRUST PROXY ---------------- */
+// Required for ES modules (__dirname fix)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/* ---------------- TRUST PROXY (RENDER / VERCEL) ---------------- */
 app.set("trust proxy", 1);
+
+/* ---------------- ENSURE UPLOADS FOLDER ---------------- */
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+  console.log("uploads folder created");
+}
 
 /* ---------------- CORS CONFIG ---------------- */
 const allowedOrigins = [
@@ -24,12 +38,14 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
+      // allow server-to-server, Postman, curl
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
+      console.error("CORS blocked:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
@@ -43,6 +59,10 @@ app.use(express.urlencoded({ extended: true }));
 
 /* ---------------- DB CONNECTION ---------------- */
 connectDB();
+
+/* ---------------- STATIC FILES ---------------- */
+// Image access → /images/filename.jpg
+app.use("/images", express.static(uploadDir));
 
 /* ---------------- ROUTES ---------------- */
 app.use("/api/food", foodRouter);
@@ -62,6 +82,7 @@ app.get("/api/health", (req, res) => {
 /* ---------------- GLOBAL ERROR HANDLER ---------------- */
 app.use((err, req, res, next) => {
   console.error("Global Error:", err.message);
+
   res.status(500).json({
     success: false,
     message: err.message || "Internal Server Error",
@@ -70,5 +91,5 @@ app.use((err, req, res, next) => {
 
 /* ---------------- SERVER ---------------- */
 app.listen(PORT, () => {
-  console.log(`Backend running on port ${PORT}`);
+  console.log(`Dashboard backend running on port ${PORT}`);
 });
