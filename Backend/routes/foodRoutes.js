@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
-import fs from "fs";
-import path from "path";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
 import { isAuthenticated, hasRole } from "../middleware/auth.js";
 import {
   addFood,
@@ -13,22 +13,12 @@ import {
 
 const foodRouter = express.Router();
 
-/* ---------------- ENSURE UPLOADS FOLDER EXISTS ---------------- */
-const uploadDir = path.join(process.cwd(), "uploads");
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-  console.log("uploads folder created");
-}
-
-/* ---------------- MULTER CONFIG ---------------- */
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${file.originalname}`;
-    cb(null, uniqueName);
+/* ---------------- MULTER + CLOUDINARY CONFIG ---------------- */
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "food-items",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
   },
 });
 

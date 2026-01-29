@@ -1,7 +1,6 @@
 import foodModel from "../models/foodModel.js";
-import fs from "fs";
 
-// ADD FOOD
+/* ================= ADD FOOD ================= */
 const addFood = async (req, res) => {
   try {
     const { name, description, price, category } = req.body;
@@ -14,15 +13,15 @@ const addFood = async (req, res) => {
       });
     }
 
-    // SAFE IMAGE HANDLING
-    const image_filename = req.file ? req.file.filename : "";
+    // CLOUDINARY IMAGE URL
+    const imageUrl = req.file ? req.file.path : "";
 
     const food = new foodModel({
       name,
       description,
       price,
       category,
-      image: image_filename,
+      image: imageUrl, // ✅ SAVE FULL URL
     });
 
     await food.save();
@@ -40,7 +39,7 @@ const addFood = async (req, res) => {
   }
 };
 
-// LIST FOOD
+/* ================= LIST FOOD ================= */
 const listFood = async (req, res) => {
   try {
     const foods = await foodModel.find({});
@@ -51,15 +50,12 @@ const listFood = async (req, res) => {
   }
 };
 
-// REMOVE FOOD
+/* ================= REMOVE FOOD ================= */
 const removeFood = async (req, res) => {
   try {
-    const food = await foodModel.findById(req.body.id);
-
-    // remove image
-    fs.unlink(`uploads/${food.image}`, () => {});
-
     await foodModel.findByIdAndDelete(req.body.id);
+
+    // ❌ No fs.unlink (Cloudinary handles storage)
     res.json({ success: true, message: "Food removed successfully" });
   } catch (error) {
     console.log(error);
@@ -67,7 +63,7 @@ const removeFood = async (req, res) => {
   }
 };
 
-// GET SINGLE FOOD (FOR EDIT)
+/* ================= GET SINGLE FOOD ================= */
 const getSingleFood = async (req, res) => {
   try {
     const food = await foodModel.findById(req.params.id);
@@ -78,7 +74,7 @@ const getSingleFood = async (req, res) => {
   }
 };
 
-// UPDATE FOOD (EDIT MODE)
+/* ================= UPDATE FOOD ================= */
 const updateFood = async (req, res) => {
   try {
     const food = await foodModel.findById(req.params.id);
@@ -87,13 +83,11 @@ const updateFood = async (req, res) => {
       return res.json({ success: false, message: "Food not found" });
     }
 
-    // If new image uploaded → delete old image
+    // If new image uploaded → replace URL
     if (req.file) {
-      fs.unlink(`uploads/${food.image}`, () => {});
-      food.image = req.file.filename;
+      food.image = req.file.path; // ✅ Cloudinary URL
     }
 
-    // Update fields
     food.name = req.body.name;
     food.description = req.body.description;
     food.category = req.body.category;
