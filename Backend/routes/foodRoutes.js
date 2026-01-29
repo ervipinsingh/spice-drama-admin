@@ -13,7 +13,7 @@ import {
 
 const foodRouter = express.Router();
 
-/* ---------------- MULTER + CLOUDINARY CONFIG ---------------- */
+/* ================= MULTER + CLOUDINARY ================= */
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -24,36 +24,36 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-/* ---------------- ROUTES ---------------- */
+/* ================= ROUTES ================= */
 
-// ADD FOOD (admin & super_admin)
+// ADD FOOD
 foodRouter.post(
   "/add",
   isAuthenticated,
-  hasRole("super_admin", "admin"),
+  hasRole("admin", "super_admin"),
   upload.single("image"),
   addFood,
 );
 
-// LIST FOOD (any authenticated admin)
+// LIST FOOD
 foodRouter.get("/list", isAuthenticated, listFood);
 
-// REMOVE FOOD (admin & super_admin)
+// REMOVE FOOD
 foodRouter.post(
   "/remove",
   isAuthenticated,
-  hasRole("super_admin", "admin"),
+  hasRole("admin", "super_admin"),
   removeFood,
 );
 
-// GET SINGLE FOOD (for edit)
+// GET SINGLE FOOD
 foodRouter.get("/single/:id", isAuthenticated, getSingleFood);
 
-// UPDATE FOOD (admin & super_admin)
+// UPDATE FOOD
 foodRouter.put(
   "/update/:id",
   isAuthenticated,
-  hasRole("super_admin", "admin"),
+  hasRole("admin", "super_admin"),
   upload.single("image"),
   updateFood,
 );

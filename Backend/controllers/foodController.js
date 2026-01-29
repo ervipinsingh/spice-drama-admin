@@ -7,21 +7,26 @@ const addFood = async (req, res) => {
 
     // BASIC VALIDATION
     if (!name || !price || !category) {
-      return res.json({
+      return res.status(400).json({
         success: false,
         message: "Name, price and category are required",
       });
     }
 
-    // CLOUDINARY IMAGE URL
-    const imageUrl = req.file ? req.file.path : "";
+    // 🚨 IMAGE MUST COME FROM MULTER
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Image upload failed (req.file missing)",
+      });
+    }
 
     const food = new foodModel({
       name,
       description,
       price,
       category,
-      image: imageUrl, // ✅ SAVE FULL URL
+      image: req.file.path, // ✅ CLOUDINARY URL
     });
 
     await food.save();
@@ -29,6 +34,7 @@ const addFood = async (req, res) => {
     res.json({
       success: true,
       message: "Food added successfully",
+      data: food,
     });
   } catch (error) {
     console.error("ADD FOOD ERROR 👉", error);
@@ -55,7 +61,7 @@ const removeFood = async (req, res) => {
   try {
     await foodModel.findByIdAndDelete(req.body.id);
 
-    // ❌ No fs.unlink (Cloudinary handles storage)
+    // Cloudinary handles files automatically
     res.json({ success: true, message: "Food removed successfully" });
   } catch (error) {
     console.log(error);
@@ -83,9 +89,9 @@ const updateFood = async (req, res) => {
       return res.json({ success: false, message: "Food not found" });
     }
 
-    // If new image uploaded → replace URL
+    // Replace image only if new one uploaded
     if (req.file) {
-      food.image = req.file.path; // ✅ Cloudinary URL
+      food.image = req.file.path; // ✅ CLOUDINARY URL
     }
 
     food.name = req.body.name;
