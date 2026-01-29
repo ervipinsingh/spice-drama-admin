@@ -1,212 +1,53 @@
-import React, { useState, useEffect } from "react";
-import { Clock, MapPin, Phone, User, CreditCard } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import userApi from "../../services/userApi";
+import adminApi from "../../services/adminApi";
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
 
-  const fetchAllOrders = async () => {
+  const fetchOrders = async () => {
     try {
-      const response = await userApi.get("/order/list");
-      if (response.data.success) {
-        setOrders(response.data.data);
-      } else {
-        toast.error("Failed to fetch orders");
-      }
+      const res = await adminApi.get("/order/list");
+      if (res.data.success) setOrders(res.data.data);
     } catch {
-      toast.error("Server error while fetching orders");
+      toast.error("Failed to load orders");
     }
   };
 
-  const statusHandler = async (event, orderId) => {
+  const updateStatus = async (orderId, status) => {
     try {
-      const response = await userApi.post("/order/status", {
-        orderId,
-        status: event.target.value,
-      });
-
-      if (response.data.success) fetchAllOrders();
-      else toast.error("Failed to update status");
+      await adminApi.post("/order/status", { orderId, status });
+      fetchOrders();
     } catch {
-      toast.error("Server error while updating status");
+      toast.error("Status update failed");
     }
   };
 
   useEffect(() => {
-    fetchAllOrders();
+    fetchOrders();
   }, []);
 
   return (
-    <div className="space-y-6 px-3 sm:px-6 py-4">
-      <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-        Customer Orders
-      </h1>
+    <div className="p-4 space-y-4">
+      <h1 className="text-xl font-bold">Orders</h1>
 
-      {orders.length === 0 && (
-        <div className="bg-white p-6 rounded-xl shadow text-center text-gray-500">
-          No orders found
-        </div>
-      )}
+      {orders.map((o) => (
+        <div key={o._id} className="bg-white p-4 rounded shadow space-y-2">
+          <p className="font-semibold">Order ID: {o._id}</p>
 
-      {orders.map((order) => (
-        <div
-          key={order._id}
-          className="bg-white rounded-xl shadow border p-4 sm:p-6 space-y-5"
-        >
-          {/* HEADER */}
-          <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-            <div>
-              <h2 className="font-semibold text-sm sm:text-lg break-all">
-                Order ID: {order._id}
-              </h2>
+          <select
+            value={o.status}
+            onChange={(e) => updateStatus(o._id, e.target.value)}
+            className="border p-2 rounded"
+          >
+            <option value="pending">Food Processing</option>
+            <option value="preparing">Preparing</option>
+            <option value="out_for_delivery">Out for delivery</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
 
-              {order.date && (
-                <div className="flex flex-wrap gap-3 text-xs sm:text-sm text-gray-500 mt-1">
-                  <span className="flex items-center gap-1">
-                    <Clock size={14} />
-                    {new Date(order.date).toLocaleDateString("en-IN")}
-                  </span>
-                  <span>
-                    {new Date(order.date).toLocaleTimeString("en-IN", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* STATUS */}
-            <select
-              value={order.status}
-              onChange={(e) => statusHandler(e, order._id)}
-              className={`cursor-pointer w-full sm:w-56 px-4 py-2 rounded-lg border text-sm font-medium
-                ${
-                  order.status === "pending" &&
-                  "bg-yellow-50 text-yellow-700 border-yellow-300"
-                }
-                ${
-                  order.status === "preparing" &&
-                  "bg-blue-50 text-blue-700 border-blue-300"
-                }
-                ${
-                  order.status === "out_for_delivery" &&
-                  "bg-purple-50 text-purple-700 border-purple-300"
-                }
-                ${
-                  order.status === "delivered" &&
-                  "bg-green-50 text-green-700 border-green-300"
-                }
-                ${
-                  order.status === "cancelled" &&
-                  "bg-red-50 text-red-700 border-red-300"
-                }`}
-            >
-              <option value="pending">Food Processing</option>
-              <option value="preparing">Preparing</option>
-              <option value="out_for_delivery">Out for delivery</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-
-          {/* CUSTOMER INFO */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="flex gap-3">
-              <User className="text-orange-500" size={18} />
-              <div>
-                <p className="font-medium">
-                  {order.address?.first_name} {order.address?.last_name}
-                </p>
-                <p className="text-gray-500 flex items-center gap-1">
-                  <Phone size={14} />
-                  {order.address?.phone}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <MapPin className="text-orange-500" size={18} />
-              <p className="text-gray-600">
-                {order.address?.street}, {order.address?.city},{" "}
-                {order.address?.state}
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <CreditCard className="text-orange-500" size={18} />
-              <p className="text-gray-600">
-                {order.paymentMethod || "Cash On Delivery"}
-              </p>
-            </div>
-          </div>
-
-          {/* ITEMS – MOBILE */}
-          <div className="space-y-2 md:hidden">
-            {order.items?.map((item, i) => (
-              <div
-                key={i}
-                className="flex justify-between border rounded-lg px-3 py-2 text-sm"
-              >
-                <span>
-                  {item.name} × {item.quantity}
-                </span>
-                <span className="font-medium">
-                  ₹{item.price * item.quantity}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* ITEMS – DESKTOP */}
-          <div className="hidden md:block border rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left px-4 py-2">Item</th>
-                  <th className="text-center px-4 py-2">Qty</th>
-                  <th className="text-right px-4 py-2">Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order.items?.map((item, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="px-4 py-2">{item.name}</td>
-                    <td className="text-center">{item.quantity}</td>
-                    <td className="text-right px-4 py-2">
-                      ₹{item.price * item.quantity}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* BILL */}
-          <div className="border-t pt-4 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span>Item Total</span>
-              <span>
-                ₹
-                {order.itemTotal ??
-                  order.items.reduce(
-                    (sum, item) => sum + item.price * item.quantity,
-                    0,
-                  )}
-              </span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Delivery Charge</span>
-              <span>₹{order.deliveryCharge ?? 40}</span>
-            </div>
-
-            <div className="flex justify-between font-semibold text-orange-600 border-t pt-2">
-              <span>Grand Total</span>
-              <span>₹{order.amount}</span>
-            </div>
-          </div>
+          <p className="font-bold text-orange-600">₹{o.amount}</p>
         </div>
       ))}
     </div>
