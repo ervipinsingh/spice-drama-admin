@@ -3,7 +3,6 @@ import { Edit, Trash2, Eye, PlusCircle, Search, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import adminApi from "../../services/adminApi";
 import userApi from "../../services/userApi";
 
 export default function List() {
@@ -29,7 +28,7 @@ export default function List() {
   const remove = async (foodId) => {
     if (!window.confirm("Delete this item?")) return;
     try {
-      const response = await adminApi.post("/food/remove", { id: foodId });
+      const response = await userApi.post("/food/remove", { id: foodId });
       if (response.data.success) {
         toast.success(response.data.message);
         fetchList();
