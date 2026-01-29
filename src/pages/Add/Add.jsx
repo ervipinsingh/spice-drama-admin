@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Upload } from "lucide-react";
 import { toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
-import adminApi from "../../services/adminApi";
+import userApi from "../../services/userApi"; // ✅ FIXED
 
 export default function AddItems() {
   const { id } = useParams();
@@ -19,9 +19,14 @@ export default function AddItems() {
 
   useEffect(() => {
     if (id) {
-      adminApi.get(`/food/single/${id}`).then((res) => {
+      userApi.get(`/food/single/${id}`).then((res) => {
         if (res.data.success) {
-          setData(res.data.data);
+          setData({
+            name: res.data.data.name,
+            description: res.data.data.description,
+            category: res.data.data.category,
+            price: res.data.data.price,
+          });
           setOldImage(res.data.data.image);
         }
       });
@@ -30,18 +35,23 @@ export default function AddItems() {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
 
+    if (!data.name || !data.category || !data.price) {
+      toast.error("Please fill required fields");
+      return;
+    }
+
+    const formData = new FormData();
     Object.keys(data).forEach((k) => formData.append(k, data[k]));
     if (image) formData.append("image", image);
 
     try {
       if (id) {
-        await adminApi.put(`/food/update/${id}`, formData);
+        await userApi.put(`/food/update/${id}`, formData); // ✅
       } else {
-        await adminApi.post("/food/add", formData);
+        await userApi.post("/food/add", formData); // ✅
       }
-      toast.success("Saved successfully");
+      toast.success(id ? "Item updated" : "Item added");
       navigate("/list");
     } catch {
       toast.error("Save failed");
@@ -54,15 +64,19 @@ export default function AddItems() {
 
       <label className="h-40 border-2 border-dashed flex items-center justify-center cursor-pointer">
         {image ? (
-          <img src={URL.createObjectURL(image)} className="h-full" />
+          <img
+            src={URL.createObjectURL(image)}
+            className="h-full object-cover"
+          />
         ) : oldImage ? (
-          <img src={oldImage} className="h-full" />
+          <img src={oldImage} className="h-full object-cover" />
         ) : (
           <Upload />
         )}
         <input
           type="file"
           hidden
+          accept="image/*"
           onChange={(e) => setImage(e.target.files[0])}
         />
       </label>

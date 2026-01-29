@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import adminApi from "../../services/adminApi";
+import userApi from "../../services/userApi"; // ✅ FIXED
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
 
   const fetchOrders = async () => {
     try {
-      const res = await adminApi.get("/order/list");
+      const res = await userApi.get("/order/list"); // ✅
       if (res.data.success) setOrders(res.data.data);
     } catch {
       toast.error("Failed to load orders");
@@ -16,7 +16,7 @@ export default function Orders() {
 
   const updateStatus = async (orderId, status) => {
     try {
-      await adminApi.post("/order/status", { orderId, status });
+      await userApi.post("/order/status", { orderId, status }); // ✅
       fetchOrders();
     } catch {
       toast.error("Status update failed");
