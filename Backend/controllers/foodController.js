@@ -1,14 +1,27 @@
 import foodModel from "../models/foodModel.js";
+import cloudinary from "../config/cloudinary.js";
+import streamifier from "streamifier";
+
+/* ================= CLOUDINARY UPLOAD HELPER ================= */
+const uploadToCloudinary = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.v2.uploader.upload_stream(
+      { folder: "food-items" },
+      (error, result) => {
+        if (result) resolve(result);
+        else reject(error);
+      },
+    );
+
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
 
 /* ================= ADD FOOD ================= */
 const addFood = async (req, res) => {
-  console.log("BODY 👉", req.body);
-  console.log("FILE 👉", req.file);
-
   try {
     const { name, description, price, category } = req.body;
 
-    // BASIC VALIDATION
     if (!name || !price || !category) {
       return res.status(400).json({
         success: false,
@@ -16,23 +29,23 @@ const addFood = async (req, res) => {
       });
     }
 
-    // 🚨 IMAGE MUST COME FROM MULTER
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: "Image upload failed (req.file missing)",
+        message: "Image is required",
       });
     }
 
-    const food = new foodModel({
+    // 🔥 upload image to cloudinary
+    const uploadedImage = await uploadToCloudinary(req.file.buffer);
+
+    const food = await foodModel.create({
       name,
       description,
       price,
       category,
-      image: req.file.path, // ✅ CLOUDINARY URL
+      image: uploadedImage.secure_url, // ✅ FULL URL
     });
-
-    await food.save();
 
     res.json({
       success: true,
@@ -63,8 +76,6 @@ const listFood = async (req, res) => {
 const removeFood = async (req, res) => {
   try {
     await foodModel.findByIdAndDelete(req.body.id);
-
-    // Cloudinary handles files automatically
     res.json({ success: true, message: "Food removed successfully" });
   } catch (error) {
     console.log(error);
@@ -92,9 +103,10 @@ const updateFood = async (req, res) => {
       return res.json({ success: false, message: "Food not found" });
     }
 
-    // Replace image only if new one uploaded
+    // upload new image if provided
     if (req.file) {
-      food.image = req.file.path; // ✅ CLOUDINARY URL
+      const uploadedImage = await uploadToCloudinary(req.file.buffer);
+      food.image = uploadedImage.secure_url;
     }
 
     food.name = req.body.name;

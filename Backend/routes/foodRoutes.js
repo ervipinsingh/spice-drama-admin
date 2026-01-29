@@ -1,7 +1,5 @@
 import express from "express";
 import multer from "multer";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
-import cloudinary from "../config/cloudinary.js";
 import { isAuthenticated, hasRole } from "../middleware/auth.js";
 import {
   addFood,
@@ -13,16 +11,12 @@ import {
 
 const foodRouter = express.Router();
 
-/* ================= MULTER + CLOUDINARY ================= */
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "food-items",
-    allowed_formats: ["jpg", "jpeg", "png", "webp"],
-  },
+/* ================= MULTER (MEMORY STORAGE) ================= */
+// ❌ diskStorage hata diya
+// ❌ uploads folder hata diya
+const upload = multer({
+  storage: multer.memoryStorage(),
 });
-
-const upload = multer({ storage });
 
 /* ================= ROUTES ================= */
 
@@ -30,7 +24,7 @@ const upload = multer({ storage });
 foodRouter.post(
   "/add",
   isAuthenticated,
-  hasRole("admin", "super_admin"),
+  hasRole("super_admin", "admin"),
   upload.single("image"),
   addFood,
 );
@@ -42,7 +36,7 @@ foodRouter.get("/list", isAuthenticated, listFood);
 foodRouter.post(
   "/remove",
   isAuthenticated,
-  hasRole("admin", "super_admin"),
+  hasRole("super_admin", "admin"),
   removeFood,
 );
 
@@ -53,7 +47,7 @@ foodRouter.get("/single/:id", isAuthenticated, getSingleFood);
 foodRouter.put(
   "/update/:id",
   isAuthenticated,
-  hasRole("admin", "super_admin"),
+  hasRole("super_admin", "admin"),
   upload.single("image"),
   updateFood,
 );
