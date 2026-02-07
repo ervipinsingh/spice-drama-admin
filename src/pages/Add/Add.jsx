@@ -16,6 +16,7 @@ export default function AddItems() {
     description: "",
     category: "",
     price: "",
+    quantity: "",
   });
 
   /* ---------------- FETCH DATA (EDIT MODE) ---------------- */
@@ -26,10 +27,11 @@ export default function AddItems() {
           const res = await userApi.get(`/food/single/${id}`);
           if (res.data.success) {
             setData({
-              name: res.data.data.name,
-              description: res.data.data.description,
-              category: res.data.data.category,
-              price: res.data.data.price,
+              name: res.data.data.name || "",
+              description: res.data.data.description || "",
+              category: res.data.data.category || "",
+              price: res.data.data.price || "",
+              quantity: res.data.data.quantity || "",
             });
             setOldImage(res.data.data.image);
           }
@@ -52,8 +54,13 @@ export default function AddItems() {
     e.preventDefault();
 
     // BASIC VALIDATION
-    if (!data.name || !data.category || !data.price) {
+    if (!data.name || !data.category || !data.price || data.quantity === "") {
       toast.error("Please fill all required fields");
+      return;
+    }
+
+    if (Number(data.quantity) < 0) {
+      toast.error("Quantity cannot be negative");
       return;
     }
 
@@ -63,6 +70,8 @@ export default function AddItems() {
       formData.append("description", data.description.trim());
       formData.append("category", data.category);
       formData.append("price", Number(data.price));
+      formData.append("quantity", Number(data.quantity));
+      formData.append("isOutOfStock", Number(data.quantity) === 0);
 
       if (image) {
         formData.append("image", image);
@@ -76,14 +85,10 @@ export default function AddItems() {
         response = await userApi.post("/food/add", formData);
       }
 
-      console.log("API RESPONSE", response.data);
-
       if (response.data.success) {
         toast.success(
           id ? "Item updated successfully" : "Item added successfully",
         );
-
-        // CORRECT REDIRECT
         navigate("/list");
       } else {
         toast.error(response.data.message || "Operation failed");
@@ -122,11 +127,13 @@ export default function AddItems() {
                 {image ? (
                   <img
                     src={URL.createObjectURL(image)}
+                    alt="preview"
                     className="w-full h-full object-cover"
                   />
                 ) : oldImage ? (
                   <img
                     src={oldImage}
+                    alt="old"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -163,32 +170,43 @@ export default function AddItems() {
                 className="w-full px-4 py-3 border rounded-lg"
               />
 
-              {/* CATEGORY + PRICE */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <select
-                  name="category"
-                  value={data.category}
-                  onChange={onChangeHandler}
-                  className="px-4 py-3 border rounded-lg"
-                  required
-                >
-                  <option value="">Select Category</option>
-                  <option>Pizza</option>
-                  <option>Burger</option>
-                  <option>Roll</option>
-                  <option>Chicken</option>
-                  <option>Egg</option>
-                  <option>Fish</option>
-                  <option>Paneer</option>
-                  <option>Rice</option>
-                  <option>Noodles</option>
-                </select>
+              {/* CATEGORY */}
+              <select
+                name="category"
+                value={data.category}
+                onChange={onChangeHandler}
+                className="w-full px-4 py-3 border rounded-lg"
+                required
+              >
+                <option value="">Select Category</option>
+                <option>Pizza</option>
+                <option>Burger</option>
+                <option>Roll</option>
+                <option>Chicken</option>
+                <option>Egg</option>
+                <option>Fish</option>
+                <option>Paneer</option>
+                <option>Rice</option>
+                <option>Noodles</option>
+              </select>
 
+              {/* PRICE + QUANTITY */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   name="price"
                   type="number"
                   placeholder="Price"
                   value={data.price}
+                  onChange={onChangeHandler}
+                  className="px-4 py-3 border rounded-lg"
+                  required
+                />
+
+                <input
+                  name="quantity"
+                  type="number"
+                  placeholder="Available Quantity"
+                  value={data.quantity}
                   onChange={onChangeHandler}
                   className="px-4 py-3 border rounded-lg"
                   required
@@ -199,7 +217,7 @@ export default function AddItems() {
             <div className="p-4 border-t bg-gray-50">
               <button
                 type="submit"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg cursor-pointer"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg"
               >
                 {id ? "Update Item" : "Add Item"}
               </button>
