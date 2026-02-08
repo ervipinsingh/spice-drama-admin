@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Clock, MapPin, Phone, User, CreditCard } from "lucide-react";
 import { toast } from "react-toastify";
-import userApi from "../../services/userApi";
+import adminApi from "../../services/adminApi";
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
 
   const fetchAllOrders = async () => {
     try {
-      const response = await userApi.get("/order/list");
+      const response = await adminApi.get("/order/list");
       if (response.data.success) {
         setOrders(response.data.data);
       } else {
@@ -21,7 +21,7 @@ export default function Orders() {
 
   const statusHandler = async (event, orderId) => {
     try {
-      const response = await userApi.post("/order/status", {
+      const response = await adminApi.post("/order/status", {
         orderId,
         status: event.target.value,
       });
