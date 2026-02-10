@@ -6,7 +6,7 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-/* ================= LOGIN ================= */
+/* ================= LOGIN (ALL ROLES) ================= */
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -26,7 +26,6 @@ router.post("/login", async (req, res) => {
   const token = generateToken(user);
 
   res.json({
-    success: true,
     token,
     user: {
       id: user._id,
@@ -69,7 +68,6 @@ router.post("/users", protect, adminOnly, async (req, res) => {
   });
 
   res.json({
-    success: true,
     user: {
       id: user._id,
       username: user.username,
@@ -83,12 +81,6 @@ router.post("/users", protect, adminOnly, async (req, res) => {
 router.get("/users", protect, adminOnly, async (req, res) => {
   const users = await User.find().select("-password");
   res.json({ users });
-});
-
-/* ================= DELETE USER ================= */
-router.delete("/users/:id", protect, adminOnly, async (req, res) => {
-  await User.findByIdAndDelete(req.params.id);
-  res.json({ success: true });
 });
 
 export default router;
