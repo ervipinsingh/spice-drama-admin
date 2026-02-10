@@ -20,31 +20,13 @@ const Login = () => {
     setError("");
     setLoading(true);
 
-    // 🔍 DEBUGGING LOGS
-    console.log("🔵 Login attempt started");
-    console.log("📝 Credentials:", credentials);
-
     try {
-      console.log("⏳ Calling login function...");
-      const response = await login(credentials);
-      
-      console.log("✅ Login successful!");
-      console.log("📦 Response:", response);
-      console.log("🔑 Token saved:", localStorage.getItem("admin_token"));
-      console.log("👤 User saved:", localStorage.getItem("admin_user"));
-      
+      await login(credentials); 
       navigate("/");
     } catch (err) {
-      console.error("❌ Login failed!");
-      console.error("📛 Error object:", err);
-      console.error("📛 Error response:", err?.response);
-      console.error("📛 Error data:", err?.response?.data);
-      console.error("📛 Error message:", err?.message);
-      
       setError(err?.response?.data?.error || "Invalid credentials");
     } finally {
       setLoading(false);
-      console.log("🏁 Login process completed");
     }
   };
 
