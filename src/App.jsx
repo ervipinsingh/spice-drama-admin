@@ -17,7 +17,7 @@ import "./index.css";
 const AppRoutes = () => {
   const { loading } = useAuth();
 
-  // IMPORTANT: wait till checkAuth finishes
+  // ⏳ wait till auth check completes
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center text-lg">
@@ -31,29 +31,57 @@ const AppRoutes = () => {
       {/* ---------------- LOGIN ---------------- */}
       <Route path="/login" element={<Login />} />
 
-      {/* ---------------- PROTECTED DASHBOARD ---------------- */}
+      {/* ---------------- DASHBOARD (ALL ROLES) ---------------- */}
       <Route
         path="/"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "editor", "viewer"]}>
             <Dashboard />
           </ProtectedRoute>
         }
       >
-        {/* Default route */}
+        {/* Default */}
         <Route index element={<Navigate to="add" replace />} />
 
-        {/* ---------- FOOD & ORDERS (USER BACKEND) ---------- */}
-        <Route path="add" element={<Add />} />
-        <Route path="add/:id" element={<Add />} />
-        <Route path="list" element={<List />} />
-        <Route path="orders" element={<Orders />} />
+        {/* ---------- FOOD & ORDERS (ADMIN + EDITOR) ---------- */}
+        <Route
+          path="add"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "editor"]}>
+              <Add />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="add/:id"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "editor"]}>
+              <Add />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="list"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "editor"]}>
+              <List />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="orders"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "editor"]}>
+              <Orders />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* ---------- USERS (ADMIN BACKEND) ---------- */}
+        {/* ---------- USERS (ADMIN ONLY) ---------- */}
         <Route
           path="users"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute allowedRoles={["admin"]}>
               <UserManagement />
             </ProtectedRoute>
           }
