@@ -14,11 +14,19 @@ mongoose
   .catch(console.error);
 
 /* ---------------- CORS ---------------- */
+/* ---------------- CORS ---------------- */
 app.use(
   cors({
-    origin: "https://spice-drama-admin.vercel.app",
-  }),
+    origin: [
+      "https://spicedrama.com",
+      "https://www.spicedrama.com",
+      "https://spicedrama.com/admin",
+      "https://spice-drama-admin.vercel.app"
+    ],
+    credentials: true,
+  })
 );
+
 
 /* ---------------- MIDDLEWARE ---------------- */
 app.use(express.json());
