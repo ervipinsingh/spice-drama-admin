@@ -19,7 +19,7 @@ app.use(
     origin: [
       "https://spicedrama.com",
       "https://www.spicedrama.com",
-      // "https://spicedrama.com/admin",
+      "https://spicedrama.com/admin",
       "https://spice-drama-admin.vercel.app",
     ],
     credentials: true,
