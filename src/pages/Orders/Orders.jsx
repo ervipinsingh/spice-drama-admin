@@ -5,9 +5,12 @@ import userApi from "../../services/userApi";
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true); // ✅ Added loading state
 
   const fetchAllOrders = async () => {
     try {
+      setLoading(true); // start loading
+
       const response = await userApi.get("/order/list");
       if (response.data.success) {
         setOrders(response.data.data);
@@ -16,6 +19,8 @@ export default function Orders() {
       }
     } catch {
       toast.error("Server error while fetching orders");
+    } finally {
+      setLoading(false); // stop loading
     }
   };
 
@@ -43,45 +48,56 @@ export default function Orders() {
         Customer Orders
       </h1>
 
-      {orders.length === 0 && (
+      {/* ✅ LOADING STATE */}
+      {loading ? (
+        <div className="bg-white p-6 rounded-xl shadow text-center">
+          <div className="flex flex-col items-center justify-center">
+            <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-600 font-medium">
+              📦 Loading customer orders...
+            </p>
+          </div>
+        </div>
+      ) : orders.length === 0 ? (
+        /* ✅ NO ORDERS */
         <div className="bg-white p-6 rounded-xl shadow text-center text-gray-500">
           No orders found
         </div>
-      )}
+      ) : (
+        /* ✅ ORDERS LIST */
+        orders.map((order) => (
+          <div
+            key={order._id}
+            className="bg-white rounded-xl shadow border p-4 sm:p-6 space-y-5"
+          >
+            {/* HEADER */}
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+              <div>
+                <h2 className="font-semibold text-sm sm:text-lg break-all">
+                  Order ID: {order._id}
+                </h2>
 
-      {orders.map((order) => (
-        <div
-          key={order._id}
-          className="bg-white rounded-xl shadow border p-4 sm:p-6 space-y-5"
-        >
-          {/* HEADER */}
-          <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-            <div>
-              <h2 className="font-semibold text-sm sm:text-lg break-all">
-                Order ID: {order._id}
-              </h2>
+                {order.date && (
+                  <div className="flex flex-wrap gap-3 text-xs sm:text-sm text-gray-500 mt-1">
+                    <span className="flex items-center gap-1">
+                      <Clock size={14} />
+                      {new Date(order.date).toLocaleDateString("en-IN")}
+                    </span>
+                    <span>
+                      {new Date(order.date).toLocaleTimeString("en-IN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                )}
+              </div>
 
-              {order.date && (
-                <div className="flex flex-wrap gap-3 text-xs sm:text-sm text-gray-500 mt-1">
-                  <span className="flex items-center gap-1">
-                    <Clock size={14} />
-                    {new Date(order.date).toLocaleDateString("en-IN")}
-                  </span>
-                  <span>
-                    {new Date(order.date).toLocaleTimeString("en-IN", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* STATUS */}
-            <select
-              value={order.status}
-              onChange={(e) => statusHandler(e, order._id)}
-              className={`cursor-pointer w-full sm:w-56 px-4 py-2 rounded-lg border text-sm font-medium
+              {/* STATUS */}
+              <select
+                value={order.status}
+                onChange={(e) => statusHandler(e, order._id)}
+                className={`cursor-pointer w-full sm:w-56 px-4 py-2 rounded-lg border text-sm font-medium
                 ${
                   order.status === "pending" &&
                   "bg-yellow-50 text-yellow-700 border-yellow-300"
@@ -102,113 +118,114 @@ export default function Orders() {
                   order.status === "cancelled" &&
                   "bg-red-50 text-red-700 border-red-300"
                 }`}
-            >
-              <option value="pending">Food Processing</option>
-              <option value="preparing">Preparing</option>
-              <option value="out_for_delivery">Out for delivery</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-
-          {/* CUSTOMER INFO */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="flex gap-3">
-              <User className="text-orange-500" size={18} />
-              <div>
-                <p className="font-medium">
-                  {order.address?.first_name} {order.address?.last_name}
-                </p>
-                <p className="text-gray-500 flex items-center gap-1">
-                  <Phone size={14} />
-                  {order.address?.phone}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <MapPin className="text-orange-500" size={18} />
-              <p className="text-gray-600">
-                {order.address?.street}, {order.address?.city},{" "}
-                {order.address?.state}
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <CreditCard className="text-orange-500" size={18} />
-              <p className="text-gray-600">
-                {order.paymentMethod || "Cash On Delivery"}
-              </p>
-            </div>
-          </div>
-
-          {/* ITEMS – MOBILE */}
-          <div className="space-y-2 md:hidden">
-            {order.items?.map((item, i) => (
-              <div
-                key={i}
-                className="flex justify-between border rounded-lg px-3 py-2 text-sm"
               >
+                <option value="pending">Food Processing</option>
+                <option value="preparing">Preparing</option>
+                <option value="out_for_delivery">Out for delivery</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            {/* CUSTOMER INFO */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="flex gap-3">
+                <User className="text-orange-500" size={18} />
+                <div>
+                  <p className="font-medium">
+                    {order.address?.first_name} {order.address?.last_name}
+                  </p>
+                  <p className="text-gray-500 flex items-center gap-1">
+                    <Phone size={14} />
+                    {order.address?.phone}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <MapPin className="text-orange-500" size={18} />
+                <p className="text-gray-600">
+                  {order.address?.street}, {order.address?.city},{" "}
+                  {order.address?.state}
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <CreditCard className="text-orange-500" size={18} />
+                <p className="text-gray-600">
+                  {order.paymentMethod || "Cash On Delivery"}
+                </p>
+              </div>
+            </div>
+
+            {/* ITEMS MOBILE */}
+            <div className="space-y-2 md:hidden">
+              {order.items?.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex justify-between border rounded-lg px-3 py-2 text-sm"
+                >
+                  <span>
+                    {item.name} × {item.quantity}
+                  </span>
+                  <span className="font-medium">
+                    ₹{item.price * item.quantity}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* ITEMS DESKTOP */}
+            <div className="hidden md:block border rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left px-4 py-2">Item</th>
+                    <th className="text-center px-4 py-2">Qty</th>
+                    <th className="text-right px-4 py-2">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {order.items?.map((item, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="px-4 py-2">{item.name}</td>
+                      <td className="text-center">{item.quantity}</td>
+                      <td className="text-right px-4 py-2">
+                        ₹{item.price * item.quantity}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* BILL */}
+            <div className="border-t pt-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Item Total</span>
                 <span>
-                  {item.name} × {item.quantity}
-                </span>
-                <span className="font-medium">
-                  ₹{item.price * item.quantity}
+                  ₹
+                  {order.itemTotal ??
+                    order.items.reduce(
+                      (sum, item) => sum + item.price * item.quantity,
+                      0,
+                    )}
                 </span>
               </div>
-            ))}
-          </div>
 
-          {/* ITEMS – DESKTOP */}
-          <div className="hidden md:block border rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left px-4 py-2">Item</th>
-                  <th className="text-center px-4 py-2">Qty</th>
-                  <th className="text-right px-4 py-2">Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order.items?.map((item, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="px-4 py-2">{item.name}</td>
-                    <td className="text-center">{item.quantity}</td>
-                    <td className="text-right px-4 py-2">
-                      ₹{item.price * item.quantity}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              <div className="flex justify-between">
+                <span>Delivery Charge</span>
+                <span>₹{order.deliveryCharge ?? 40}</span>
+              </div>
 
-          {/* BILL */}
-          <div className="border-t pt-4 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span>Item Total</span>
-              <span>
-                ₹
-                {order.itemTotal ??
-                  order.items.reduce(
-                    (sum, item) => sum + item.price * item.quantity,
-                    0,
-                  )}
-              </span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Delivery Charge</span>
-              <span>₹{order.deliveryCharge ?? 40}</span>
-            </div>
-
-            <div className="flex justify-between font-semibold text-orange-600 border-t pt-2">
-              <span>Grand Total</span>
-              <span>₹{order.amount}</span>
+              <div className="flex justify-between font-semibold text-orange-600 border-t pt-2">
+                <span>Grand Total</span>
+                <span>₹{order.amount}</span>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 }

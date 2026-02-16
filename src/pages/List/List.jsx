@@ -9,18 +9,23 @@ export default function List() {
   const [list, setList] = useState([]);
   const [search, setSearch] = useState("");
   const [viewItem, setViewItem] = useState(null);
+  const [loading, setLoading] = useState(true); // ✅ Added loading
 
   const navigate = useNavigate();
 
   /* ---------------- FETCH LIST ---------------- */
   const fetchList = async () => {
     try {
+      setLoading(true); // start loading
+
       const response = await userApi.get("/food/list");
       if (response.data.success) {
         setList(response.data.data);
       }
     } catch {
       toast.error("Server error");
+    } finally {
+      setLoading(false); // stop loading
     }
   };
 
@@ -91,148 +96,160 @@ export default function List() {
           />
         </div>
 
-        {/* MOBILE CARDS */}
-        <div className="grid gap-3 sm:gap-4 lg:hidden">
-          {filteredItems.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <p className="text-gray-400 font-medium">No items found</p>
+        {/* ✅ LOADING STATE */}
+        {loading ? (
+          <div className="bg-white rounded-lg shadow p-12 text-center">
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="mt-4 text-gray-600 font-medium">
+                🍽️ Loading menu items...
+              </p>
             </div>
-          ) : (
-            filteredItems.map((item) => (
-              <div
-                key={item._id}
-                className="bg-white rounded-lg shadow-sm border p-3 sm:p-4"
-              >
-                <div className="flex gap-3">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                  />
+          </div>
+        ) : (
+          <>
+            {/* MOBILE CARDS */}
+            <div className="grid gap-3 sm:gap-4 lg:hidden">
+              {filteredItems.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-lg">
+                  <p className="text-gray-400 font-medium">No items found</p>
+                </div>
+              ) : (
+                filteredItems.map((item) => (
+                  <div
+                    key={item._id}
+                    className="bg-white rounded-lg shadow-sm border p-3 sm:p-4"
+                  >
+                    <div className="flex gap-3">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                      />
 
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-semibold text-base truncate">
-                      {item.name}
-                    </h2>
-                    <p className="text-xs text-gray-500">
-                      Category: {item.category}
-                    </p>
-                    <p className="font-bold text-orange-600 mt-1">
-                      ₹{item.price}
-                    </p>
+                      <div className="flex-1 min-w-0">
+                        <h2 className="font-semibold text-base truncate">
+                          {item.name}
+                        </h2>
+                        <p className="text-xs text-gray-500">
+                          Category: {item.category}
+                        </p>
+                        <p className="font-bold text-orange-600 mt-1">
+                          ₹{item.price}
+                        </p>
 
-                    {/* QUANTITY */}
-                    <p className="text-xs mt-1 font-medium text-gray-600">
-                      Quantity:{" "}
-                      <span
-                        className={
+                        <p className="text-xs mt-1 font-medium text-gray-600">
+                          Quantity:{" "}
+                          <span
+                            className={
+                              item.quantity === 0
+                                ? "text-red-500"
+                                : "text-green-600"
+                            }
+                          >
+                            {item.quantity}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 mt-3 pt-3 border-t">
+                      <button
+                        onClick={() => setViewItem(item)}
+                        className="flex-1 bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-medium"
+                      >
+                        <Eye size={14} className="inline mr-1" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => navigate(`/add/${item._id}`)}
+                        className="flex-1 bg-orange-50 text-orange-600 py-2 rounded-lg text-xs font-medium"
+                      >
+                        <Edit size={14} className="inline mr-1" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => remove(item._id)}
+                        className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg text-xs font-medium"
+                      >
+                        <Trash2 size={14} className="inline mr-1" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* DESKTOP TABLE */}
+            <div className="hidden lg:block bg-white rounded-xl shadow border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Item</th>
+                    <th className="px-4 py-3 text-left">Category</th>
+                    <th className="px-4 py-3 text-right">Price</th>
+                    <th className="px-4 py-3 text-center">Quantity</th>
+                    <th className="px-4 py-3 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredItems.map((item) => (
+                    <tr key={item._id} className="border-t">
+                      <td className="px-4 py-3 flex items-center gap-3">
+                        <img
+                          src={item.image}
+                          className="w-10 h-10 rounded object-cover"
+                        />
+                        {item.name}
+                      </td>
+                      <td className="px-4 py-3">{item.category}</td>
+                      <td className="px-4 py-3 text-right font-semibold text-orange-600">
+                        ₹{item.price}
+                      </td>
+                      <td
+                        className={`px-4 py-3 text-center font-semibold ${
                           item.quantity === 0
                             ? "text-red-500"
                             : "text-green-600"
-                        }
+                        }`}
                       >
                         {item.quantity}
-                      </span>
-                    </p>
-                  </div>
-                </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex justify-center gap-2">
+                          <Eye
+                            className="text-blue-600 cursor-pointer"
+                            size={18}
+                            onClick={() => setViewItem(item)}
+                          />
+                          <Edit
+                            className="text-orange-600 cursor-pointer"
+                            size={18}
+                            onClick={() => navigate(`/add/${item._id}`)}
+                          />
+                          <Trash2
+                            className="text-red-600 cursor-pointer"
+                            size={18}
+                            onClick={() => remove(item._id)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-                <div className="flex gap-2 mt-3 pt-3 border-t">
-                  <button
-                    onClick={() => setViewItem(item)}
-                    className="flex-1 bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-medium"
-                  >
-                    <Eye size={14} className="inline mr-1" />
-                    View
-                  </button>
-                  <button
-                    onClick={() => navigate(`/add/${item._id}`)}
-                    className="flex-1 bg-orange-50 text-orange-600 py-2 rounded-lg text-xs font-medium"
-                  >
-                    <Edit size={14} className="inline mr-1" />
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => remove(item._id)}
-                    className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg text-xs font-medium"
-                  >
-                    <Trash2 size={14} className="inline mr-1" />
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* DESKTOP TABLE */}
-        <div className="hidden lg:block bg-white rounded-xl shadow border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left">Item</th>
-                <th className="px-4 py-3 text-left">Category</th>
-                <th className="px-4 py-3 text-right">Price</th>
-                <th className="px-4 py-3 text-center">Quantity</th>
-                <th className="px-4 py-3 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredItems.map((item) => (
-                <tr key={item._id} className="border-t">
-                  <td className="px-4 py-3 flex items-center gap-3">
-                    <img
-                      src={item.image}
-                      className="w-10 h-10 rounded object-cover"
-                    />
-                    {item.name}
-                  </td>
-                  <td className="px-4 py-3">{item.category}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-orange-600">
-                    ₹{item.price}
-                  </td>
-
-                  {/* QUANTITY */}
-                  <td
-                    className={`px-4 py-3 text-center font-semibold ${
-                      item.quantity === 0 ? "text-red-500" : "text-green-600"
-                    }`}
-                  >
-                    {item.quantity}
-                  </td>
-
-                  <td className="px-4 py-3 text-center">
-                    <div className="flex justify-center gap-2">
-                      <Eye
-                        className="text-blue-600 cursor-pointer"
-                        size={18}
-                        onClick={() => setViewItem(item)}
-                      />
-                      <Edit
-                        className="text-orange-600 cursor-pointer"
-                        size={18}
-                        onClick={() => navigate(`/add/${item._id}`)}
-                      />
-                      <Trash2
-                        className="text-red-600 cursor-pointer"
-                        size={18}
-                        onClick={() => remove(item._id)}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* COUNT */}
-        <div className="text-center text-xs text-gray-500">
-          Showing {filteredItems.length} of {list.length} items
-        </div>
+            {/* COUNT */}
+            <div className="text-center text-xs text-gray-500">
+              Showing {filteredItems.length} of {list.length} items
+            </div>
+          </>
+        )}
       </div>
 
-      {/* VIEW POPUP */}
+      {/* VIEW POPUP (unchanged) */}
       <AnimatePresence>
         {viewItem && (
           <motion.div
@@ -267,7 +284,6 @@ export default function List() {
                   <span className="text-orange-600">₹{viewItem.price}</span>
                 </div>
 
-                {/* QUANTITY */}
                 <p
                   className={`text-sm font-semibold ${
                     viewItem.quantity === 0 ? "text-red-500" : "text-green-600"
