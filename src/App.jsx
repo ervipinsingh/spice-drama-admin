@@ -8,6 +8,7 @@ import Add from "./pages/Add/Add";
 import List from "./pages/List/List";
 import Orders from "./pages/Orders/Orders";
 import UserManagement from "./pages/UserManagement/UserManagement";
+import PromoCode from "./pages/PromoCode/PromoCode";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -73,6 +74,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={["admin", "editor"]}>
               <Orders />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="promo"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "editor"]}>
+              <PromoCode />
             </ProtectedRoute>
           }
         />

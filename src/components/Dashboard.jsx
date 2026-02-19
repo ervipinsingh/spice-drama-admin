@@ -132,6 +132,22 @@ export default function Dashboard() {
               Manage Users
             </NavLink>
           )}
+            {["admin", "editor"].includes(user?.role) && (
+            <NavLink
+              to="/promo"
+              className={({ isActive }) =>
+                `flex items-center gap-3 p-3 rounded-lg transition ${
+                  isActive
+                    ? "bg-white text-orange-600 shadow"
+                    : "hover:bg-orange-500"
+                }`
+              }
+              onClick={() => setSidebarOpen(false)}
+            >
+              <Plus size={20} />
+              Promo Codes
+            </NavLink>
+          )}
         </nav>
 
         {/* FOOTER */}
