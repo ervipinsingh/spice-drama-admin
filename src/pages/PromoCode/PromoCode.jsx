@@ -77,7 +77,7 @@ const CreatePromo = () => {
 
       if (response.data.success) {
         alert("Promo Deleted Successfully");
-        fetchPromos(); // refresh list
+        fetchPromos();
       } else {
         alert(response.data.message);
       }
