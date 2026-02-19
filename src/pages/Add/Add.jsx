@@ -195,6 +195,7 @@ export default function AddItems() {
                 <option>Snacks</option>
                 <option>Desserts</option>
                 <option>Beverages</option>
+                <option>Others</option>
               </select>
 
               {/* PRICE + QUANTITY */}
