@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingBag, LogOut, Plus, List, Users } from "lucide-react";
+import {
+  Menu,
+  X,
+  ShoppingBag,
+  LogOut,
+  Plus,
+  List,
+  Tag,
+  Users,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
@@ -132,7 +141,7 @@ export default function Dashboard() {
               Manage Users
             </NavLink>
           )}
-            {["admin", "editor"].includes(user?.role) && (
+          {["admin", "editor"].includes(user?.role) && (
             <NavLink
               to="/promo"
               className={({ isActive }) =>
@@ -144,7 +153,7 @@ export default function Dashboard() {
               }
               onClick={() => setSidebarOpen(false)}
             >
-              <Plus size={20} />
+              <Tag size={20} />
               Promo Codes
             </NavLink>
           )}
