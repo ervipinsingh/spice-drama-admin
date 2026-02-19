@@ -3,7 +3,7 @@ import { useState } from "react";
 
 const CreatePromo = () => {
   // ✅ Get API URL from .env
-  const url = import.meta.env.VITE_API_URL;
+  const url = import.meta.env.VITE_USER_API;
 
   const [form, setForm] = useState({
     code: "",
